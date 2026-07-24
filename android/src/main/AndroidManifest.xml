@@ -1,0 +1,18 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!--
+            The 3-D Secure screen. It hosts the official SDK's
+            ThreeDsDialogFragment, which needs a host that implements
+            ThreeDSDialogListener — a plain FlutterActivity does not, which is
+            why this Activity exists.
+
+            Not exported: it is only ever started from within the app.
+        -->
+        <activity
+            android:name=".CloudpaymentsThreeDsActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|keyboardHidden|smallestScreenSize|screenLayout|uiMode"
+            android:theme="@style/Theme_Cloudpayments_ThreeDs"
+            android:windowSoftInputMode="adjustResize" />
+    </application>
+</manifest>

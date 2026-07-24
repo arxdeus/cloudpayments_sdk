@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        The theme of the 3-D Secure screen. The issuer's page owns the whole
+        window, so there is nothing to style beyond giving it an opaque
+        background and getting the action bar out of the way.
+
+        AppCompat, not MaterialComponents: the SDK's 3-D Secure layout uses only
+        framework widgets, so there is no reason to pull the Material theme in.
+    -->
+    <style name="Theme_Cloudpayments_ThreeDs" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:windowBackground">@android:color/white</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsTranslucent">false</item>
+    </style>
+</resources>

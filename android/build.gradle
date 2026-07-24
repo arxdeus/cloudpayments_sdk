@@ -1,0 +1,85 @@
+group = "ru.cloudpayments.flutter.cloudpayments_sdk"
+version = "0.2.0"
+
+// The version of the official CloudPayments Android SDK this plugin binds to.
+// Override it from the app with:
+//   ext.cloudpaymentsAndroidSdkVersion = "2.1.6"
+// in android/build.gradle, before the Flutter plugin projects are evaluated.
+def resolvedCloudpaymentsSdkVersion =
+        rootProject.hasProperty("cloudpaymentsAndroidSdkVersion")
+                ? rootProject.ext.cloudpaymentsAndroidSdkVersion
+                : "2.1.5"
+
+buildscript {
+    ext.kotlin_version = "2.4.0"
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.7.3")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        // The official CloudPayments Android SDK is distributed through JitPack
+        // only; it is not on Maven Central.
+        maven { url = uri("https://jitpack.io") }
+    }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+android {
+    namespace = "ru.cloudpayments.flutter.cloudpayments_sdk"
+    // Not a preference: the CloudPayments AAR declares minCompileSdk=37 in its
+    // aar-metadata.properties, and AGP fails the build of anything that
+    // compiles against less.
+    compileSdk = 37
+
+    compileOptions {
+        // The CloudPayments SDK is compiled for Java 17, so anything linking
+        // against it must be too.
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+        test.java.srcDirs += "src/test/kotlin"
+    }
+
+    defaultConfig {
+        // The CloudPayments SDK requires API 24.
+        minSdk = 24
+        consumerProguardFiles "consumer-rules.pro"
+        buildConfigField "String", "CLOUDPAYMENTS_SDK_VERSION",
+                "\"$resolvedCloudpaymentsSdkVersion\""
+        // The CloudPayments SDK's manifest declares a deep-link host through
+        // this placeholder. Setting it here covers this module; the *app*
+        // module has to set it too, because that is where the AAR's manifest is
+        // merged. See the README.
+        manifestPlaceholders = [cpSdkHost: ""]
+    }
+
+    buildFeatures {
+        // Needed for the CLOUDPAYMENTS_SDK_VERSION field above; AGP 8 turns
+        // BuildConfig generation off by default.
+        buildConfig = true
+    }
+}
+
+dependencies {
+    implementation "ru.cloudpayments.gitpub.integrations.sdk:cloudpayments-android:$resolvedCloudpaymentsSdkVersion"
+    implementation "androidx.appcompat:appcompat:1.7.0"
+    implementation "androidx.fragment:fragment-ktx:1.8.5"
+}
