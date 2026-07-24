@@ -1,0 +1,49 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+android {
+    namespace = "ru.cloudpayments.flutter.cloudpayments_sdk_example"
+    // Required: the CloudPayments AAR declares minCompileSdk=37, and AGP fails
+    // the build of anything that compiles against less.
+    compileSdk = 37
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        // The CloudPayments SDK targets Java 17.
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17.toString()
+    }
+
+    defaultConfig {
+        applicationId = "ru.cloudpayments.flutter.cloudpayments_sdk_example"
+        // The CloudPayments SDK requires API 24.
+        minSdk = 24
+        targetSdk = 36
+        versionCode = 1
+        versionName = "0.1.0"
+
+        // REQUIRED. The CloudPayments SDK's manifest declares a deep-link host
+        // through this placeholder, and the manifest merger fails without it.
+        // An empty string is what CloudPayments documents for card-only flows.
+        manifestPlaceholders = [cpSdkHost: ""]
+    }
+
+    buildTypes {
+        release {
+            // Debug signing so `flutter run --release` works out of the box.
+            // Use your own signing config for anything you ship.
+            signingConfig = signingConfigs.debug
+        }
+    }
+}
+
+flutter {
+    source = "../.."
+}
