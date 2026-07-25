@@ -23,6 +23,9 @@ jobs:
       with:
         flutter-version: 3.44.7
 
+    - name: Setup OIDC token
+      uses: dart-lang/setup-dart@v1
+
     - name: "Run Publish"
       shell: bash
       run: flutter pub publish --force
