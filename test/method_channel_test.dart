@@ -12,6 +12,7 @@ void main() {
 
   final platform = MethodChannelCloudpaymentsSdk();
   final calls = <MethodCall>[];
+
   Object? reply;
   PlatformException? failWith;
 
