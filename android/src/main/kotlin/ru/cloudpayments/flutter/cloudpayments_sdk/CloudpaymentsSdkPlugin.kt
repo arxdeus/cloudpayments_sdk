@@ -323,6 +323,7 @@ class CloudpaymentsSdkPlugin :
         }
     }
 
+    @Suppress("UNCHECKED_CAST")
     private fun buildPaymentData(call: MethodCall, amount: String): PaymentData {
         val payer = call.argument<Map<String, Any?>>("payer")?.let {
             PaymentDataPayer(
@@ -348,12 +349,10 @@ class CloudpaymentsSdkPlugin :
                 amount = (it["amount"] as? Number)?.toDouble(),
                 // The SDK's property is customerReceipt but it serialises as
                 // "receipt", which is the name CloudPayments now expects.
-                @Suppress("UNCHECKED_CAST")
                 customerReceipt = it["receipt"] as? Map<String, Any?>,
             )
         }
 
-        @Suppress("UNCHECKED_CAST")
         val receipt = call.argument<Map<String, Any?>>("receipt")
 
         return PaymentData(

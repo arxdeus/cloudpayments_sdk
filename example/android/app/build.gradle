@@ -7,8 +7,14 @@ plugins {
 android {
     namespace = "ru.cloudpayments.flutter.cloudpayments_sdk_example"
     // Required: the CloudPayments AAR declares minCompileSdk=37, and AGP fails
-    // the build of anything that compiles against less.
-    compileSdk = 37
+    // the build of anything that compiles against less. The minor level has to
+    // be spelled out because API 37 is only published as
+    // `platforms;android-37.0`.
+    compileSdk {
+        version = release(37) {
+            it.minorApiLevel = 0
+        }
+    }
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -32,7 +38,9 @@ android {
         // REQUIRED. The CloudPayments SDK's manifest declares a deep-link host
         // through this placeholder, and the manifest merger fails without it.
         // An empty string is what CloudPayments documents for card-only flows.
-        manifestPlaceholders = [cpSdkHost: ""]
+        // Add to the map rather than assigning it: the Flutter Gradle plugin
+        // has already put `applicationName` in there.
+        manifestPlaceholders["cpSdkHost"] = ""
     }
 
     buildTypes {

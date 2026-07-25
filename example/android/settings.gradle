@@ -18,7 +18,10 @@ pluginManagement {
 
 plugins {
     id "dev.flutter.flutter-plugin-loader" version "1.0.0"
-    id "com.android.application" version "8.7.3" apply false
+    // AGP 8.13 is the first release that understands minor-versioned SDK
+    // platforms; API 37 ships only as `platforms;android-37.0`, so anything
+    // older looks for a `platforms;android-37` that does not exist.
+    id "com.android.application" version "9.0.1" apply false
     // The CloudPayments Android SDK is built with Kotlin 2.4; consuming its
     // metadata needs a compiler at least that new.
     id "org.jetbrains.kotlin.android" version "2.4.0" apply false

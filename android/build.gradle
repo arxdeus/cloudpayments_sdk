@@ -17,7 +17,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:8.7.3")
+        classpath("com.android.tools.build:gradle:9.0.1")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
     }
 }
@@ -39,8 +39,13 @@ android {
     namespace = "ru.cloudpayments.flutter.cloudpayments_sdk"
     // Not a preference: the CloudPayments AAR declares minCompileSdk=37 in its
     // aar-metadata.properties, and AGP fails the build of anything that
-    // compiles against less.
-    compileSdk = 37
+    // compiles against less. The minor level has to be spelled out because
+    // API 37 is only published as `platforms;android-37.0`.
+    compileSdk {
+        version = release(37) {
+            it.minorApiLevel = 0
+        }
+    }
 
     compileOptions {
         // The CloudPayments SDK is compiled for Java 17, so anything linking
@@ -68,7 +73,7 @@ android {
         // this placeholder. Setting it here covers this module; the *app*
         // module has to set it too, because that is where the AAR's manifest is
         // merged. See the README.
-        manifestPlaceholders = [cpSdkHost: ""]
+        manifestPlaceholders["cpSdkHost"] = ""
     }
 
     buildFeatures {
