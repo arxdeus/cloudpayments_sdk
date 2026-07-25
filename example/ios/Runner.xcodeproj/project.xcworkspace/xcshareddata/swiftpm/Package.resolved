@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "cloudpayments-ios",
+      "kind" : "remoteSourceControl",
+      "location" : "https://gitpub.cloudpayments.ru/integrations/sdk/cloudpayments-ios.git",
+      "state" : {
+        "revision" : "ae1b4e9e2f529f0cf5111f9a219bbcb99e6c825b",
+        "version" : "2.1.6"
+      }
+    }
+  ],
+  "version" : 2
+}
