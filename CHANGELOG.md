@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.3.0](https://github.com/arxdeus/cloudpayments_sdk/compare/v0.2.0..0.3.0) - 2026-07-25
+
+### Bug Fixes
+
+- **(android)** require AGP 8.13+ for compileSdk 37 - ([3fac1d8](https://github.com/arxdeus/cloudpayments_sdk/commit/3fac1d8ed7cfeab498c1e3b63c92f36ad0bcc23e))
+- strict lint rules - ([c2aa900](https://github.com/arxdeus/cloudpayments_sdk/commit/c2aa9003b01039a290a4d2411dbcbe0cf022e75e))
+
+### Documentation
+
+- **(example)** correct the Android and iOS setup notes - ([68c9a5c](https://github.com/arxdeus/cloudpayments_sdk/commit/68c9a5c65d1fd912fdcfb7c610ec21afb72870f7))
+
+### Features
+
+- **(ios)** resolve CloudPayments via Swift PM - ([ceb9ce9](https://github.com/arxdeus/cloudpayments_sdk/commit/ceb9ce94f16a04b853fc01ec5092b9a598a8a874))
+- annotate the public API with @immutable and @useResult - ([e92b60b](https://github.com/arxdeus/cloudpayments_sdk/commit/e92b60bcac09466fea4ae6b8f1cea1ed539b42a8))
+- CI/CD workflow - ([b921cb5](https://github.com/arxdeus/cloudpayments_sdk/commit/b921cb5df4ad631fd3c8c9dfe5ba057aca9955d9))
+
+### Miscellaneous Chores
+
+- **(README)** add contact information for adopting the package - ([c736f19](https://github.com/arxdeus/cloudpayments_sdk/commit/c736f194f3b72873bc96d202ef5913d03ba005e2))
+- **(example)** check in the iOS Runner project - ([587201f](https://github.com/arxdeus/cloudpayments_sdk/commit/587201fe16d8bf865e551a322eccbfebf9b4598d))
+- **(example)** add the missing project files - ([2ca6b46](https://github.com/arxdeus/cloudpayments_sdk/commit/2ca6b4648f77ea5352e6d916547c1a20e9e448c6))
+- `.pubignore` to exclude unnecessary files - ([120e7ea](https://github.com/arxdeus/cloudpayments_sdk/commit/120e7ea4fcbc0b6ef587a5ba4cb910acbccb5d73))
+- remove .fvmrc - ([a4bd45f](https://github.com/arxdeus/cloudpayments_sdk/commit/a4bd45fa53ab9445a6076f09e66d67db941b7fa7))
+
+### Refactoring
+
+- move the plugin identifier to dev.arxdeus.flutter - ([d4d51ee](https://github.com/arxdeus/cloudpayments_sdk/commit/d4d51ee021d0ca748af45651801c6492ce7750c5))
+
 ## Unreleased
 
 - **The plugin identifier moved from `ru.cloudpayments.flutter` to
