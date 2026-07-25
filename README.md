@@ -406,3 +406,9 @@ in that situation; this package deliberately does not.
 
 Bug reports and pull requests are welcome. This is an unofficial package; it is
 not published or supported by CloudPayments.
+
+### A note for CloudPayments
+
+If you would like to adopt this package as the official Flutter SDK, please
+contact me first at [hello@arxdeus.dev](mailto:hello@arxdeus.dev). A GitHub
+issue or any channel listed on <https://github.com/arxdeus> is also fine.
