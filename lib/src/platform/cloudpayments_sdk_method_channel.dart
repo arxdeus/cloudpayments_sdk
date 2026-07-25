@@ -11,7 +11,7 @@ class MethodChannelCloudpaymentsSdk extends CloudpaymentsSdkPlatform {
   /// contract — changing it means changing both platforms too.
   @visibleForTesting
   final MethodChannel methodChannel =
-      const MethodChannel('ru.cloudpayments.flutter/cloudpayments_sdk');
+      const MethodChannel('dev.arxdeus.flutter/cloudpayments_sdk');
 
   @override
   Future<String> createCryptogram({

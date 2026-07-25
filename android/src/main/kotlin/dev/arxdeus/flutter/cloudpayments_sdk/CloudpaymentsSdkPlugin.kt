@@ -1,4 +1,4 @@
-package ru.cloudpayments.flutter.cloudpayments_sdk
+package dev.arxdeus.flutter.cloudpayments_sdk
 
 import android.app.Activity
 import android.app.ActivityManager
@@ -31,7 +31,7 @@ class CloudpaymentsSdkPlugin :
     PluginRegistry.ActivityResultListener {
 
     private companion object {
-        const val CHANNEL_NAME = "ru.cloudpayments.flutter/cloudpayments_sdk"
+        const val CHANNEL_NAME = "dev.arxdeus.flutter/cloudpayments_sdk"
         const val THREE_DS_REQUEST_CODE = 0xCA5D
         const val PAYMENT_FORM_REQUEST_CODE = 0xCA5E
     }

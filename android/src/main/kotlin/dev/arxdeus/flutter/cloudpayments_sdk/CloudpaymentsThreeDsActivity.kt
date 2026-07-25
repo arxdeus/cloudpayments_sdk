@@ -1,4 +1,4 @@
-package ru.cloudpayments.flutter.cloudpayments_sdk
+package dev.arxdeus.flutter.cloudpayments_sdk
 
 import android.app.Activity
 import android.content.Context
@@ -24,13 +24,13 @@ class CloudpaymentsThreeDsActivity :
     ThreeDsDialogFragment.ThreeDSDialogListener {
 
     companion object {
-        const val EXTRA_ACS_URL = "ru.cloudpayments.flutter.acsUrl"
-        const val EXTRA_PA_REQ = "ru.cloudpayments.flutter.paReq"
-        const val EXTRA_MD = "ru.cloudpayments.flutter.md"
-        const val EXTRA_PA_RES = "ru.cloudpayments.flutter.paRes"
-        const val EXTRA_STATUS = "ru.cloudpayments.flutter.status"
-        const val EXTRA_MESSAGE = "ru.cloudpayments.flutter.message"
-        const val EXTRA_HTML = "ru.cloudpayments.flutter.html"
+        const val EXTRA_ACS_URL = "dev.arxdeus.flutter.acsUrl"
+        const val EXTRA_PA_REQ = "dev.arxdeus.flutter.paReq"
+        const val EXTRA_MD = "dev.arxdeus.flutter.md"
+        const val EXTRA_PA_RES = "dev.arxdeus.flutter.paRes"
+        const val EXTRA_STATUS = "dev.arxdeus.flutter.status"
+        const val EXTRA_MESSAGE = "dev.arxdeus.flutter.message"
+        const val EXTRA_HTML = "dev.arxdeus.flutter.html"
 
         const val STATUS_SUCCESS = "success"
         const val STATUS_FAILURE = "failure"

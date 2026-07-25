@@ -1,4 +1,4 @@
-group = "ru.cloudpayments.flutter.cloudpayments_sdk"
+group = "dev.arxdeus.flutter.cloudpayments_sdk"
 version = "0.2.0"
 
 // The version of the official CloudPayments Android SDK this plugin binds to.
@@ -36,7 +36,7 @@ apply plugin: "com.android.library"
 apply plugin: "kotlin-android"
 
 android {
-    namespace = "ru.cloudpayments.flutter.cloudpayments_sdk"
+    namespace = "dev.arxdeus.flutter.cloudpayments_sdk"
     // Not a preference: the CloudPayments AAR declares minCompileSdk=37 in its
     // aar-metadata.properties, and AGP fails the build of anything that
     // compiles against less. The minor level has to be spelled out because

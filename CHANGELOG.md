@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- **The plugin identifier moved from `ru.cloudpayments.flutter` to
+  `dev.arxdeus.flutter`.** This covers the method channel name, the Android
+  package, namespace and Maven group, the 3-D Secure `Intent` extra keys and the
+  ProGuard rules. Nothing in the Dart API changes, and the CloudPayments SDK
+  dependencies (`ru.cloudpayments.sdk`, `ru.cloudpayments.gitpub…`) are
+  untouched. Apps that keep their own ProGuard rules for the plugin classes have
+  to update the package name there.
+
 ## 0.3.0
 
 - Models, results, options and exceptions are annotated `@immutable`, and pure

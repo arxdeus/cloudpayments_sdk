@@ -9,7 +9,7 @@ import WebKit
 /// building a card cryptogram with `Card`, and driving `ThreeDsProcessor`'s
 /// 3-D Secure WebView. Validation, HTTP and orchestration all live in Dart.
 public class CloudpaymentsSdkPlugin: NSObject, FlutterPlugin {
-    private static let channelName = "ru.cloudpayments.flutter/cloudpayments_sdk"
+    private static let channelName = "dev.arxdeus.flutter/cloudpayments_sdk"
 
     /// The CloudPayments iOS SDK release this plugin is written against.
     /// Reported to Dart for diagnostics; keep it in step with Package.swift.

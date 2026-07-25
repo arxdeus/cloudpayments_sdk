@@ -1,4 +1,4 @@
-package ru.cloudpayments.flutter.cloudpayments_sdk_example
+package dev.arxdeus.flutter.cloudpayments_sdk_example
 
 import io.flutter.embedding.android.FlutterActivity
 

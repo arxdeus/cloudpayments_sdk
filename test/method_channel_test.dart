@@ -40,7 +40,7 @@ void main() {
   test('uses the channel name both native sides register', () {
     expect(
       platform.methodChannel.name,
-      'ru.cloudpayments.flutter/cloudpayments_sdk',
+      'dev.arxdeus.flutter/cloudpayments_sdk',
     );
   });
 

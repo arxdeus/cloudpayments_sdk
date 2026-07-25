@@ -4,8 +4,8 @@ description: >-
   official native iOS and Android SDKs, the Payment API, and 3-D Secure in a
   native WebView.
 version: 0.3.0
-repository: https://github.com/cloudpayments-community/cloudpayments_sdk
-issue_tracker: https://github.com/cloudpayments-community/cloudpayments_sdk/issues
+repository: https://github.com/arxdeus/cloudpayments_sdk
+issue_tracker: https://github.com/arxdeus/cloudpayments_sdk/issues
 
 environment:
   sdk: ">=3.5.0 <4.0.0"
@@ -27,7 +27,7 @@ flutter:
   plugin:
     platforms:
       android:
-        package: ru.cloudpayments.flutter.cloudpayments_sdk
+        package: dev.arxdeus.flutter.cloudpayments_sdk
         pluginClass: CloudpaymentsSdkPlugin
       ios:
         pluginClass: CloudpaymentsSdkPlugin

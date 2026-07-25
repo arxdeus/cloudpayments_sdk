@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "ru.cloudpayments.flutter.cloudpayments_sdk_example"
+    namespace = "dev.arxdeus.flutter.cloudpayments_sdk_example"
     // Required: the CloudPayments AAR declares minCompileSdk=37, and AGP fails
     // the build of anything that compiles against less. The minor level has to
     // be spelled out because API 37 is only published as
@@ -28,7 +28,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "ru.cloudpayments.flutter.cloudpayments_sdk_example"
+        applicationId = "dev.arxdeus.flutter.cloudpayments_sdk_example"
         // The CloudPayments SDK requires API 24.
         minSdk = 24
         targetSdk = 36
