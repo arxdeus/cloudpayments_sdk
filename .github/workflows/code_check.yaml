@@ -32,3 +32,4 @@ jobs:
         uses: arxdeus/github_workflows/actions/flutter_codecheck@main
         with:
           flutter-version: 3.44.7
+          line-length: 80
