@@ -17,34 +17,26 @@ The runner is complete and should build as-is. Two settings differ from a stock
 `flutter create` app, both required by the CloudPayments SDK and both already
 applied in `android/app/build.gradle`:
 
-- `minSdk = 24` and Java/Kotlin target 17
-- `manifestPlaceholders = [cpSdkHost: ""]` — without it the manifest merger
+- `minSdk = 24`, `compileSdk` 37 and Java/Kotlin target 17. API 37 is published
+  only as `platforms;android-37.0`, so the compile SDK is declared through
+  `release(37) { minorApiLevel = 0 }` and the app needs AGP 8.13 or newer.
+- `manifestPlaceholders["cpSdkHost"] = ""` — without it the manifest merger
   fails, because the SDK's own manifest declares a deep-link host through that
-  placeholder
+  placeholder. Add to the map rather than assigning it, or Flutter's own
+  `applicationName` placeholder is dropped and the merge fails anyway.
 
 `android/build.gradle` also adds the JitPack repository, which is the only place
 the CloudPayments Android SDK is published.
 
 ### iOS
 
-The Xcode project is not checked in — generate it once:
+The runner builds as-is. `ios/Runner.xcodeproj` is checked in with every
+`IPHONEOS_DEPLOYMENT_TARGET` already at **15.0**, which CloudPayments requires
+and Flutter's template does not default to.
 
-```bash
-cd example
-flutter create --platforms=ios .
-```
-
-That regenerates `ios/Runner.xcodeproj` **and overwrites `ios/Podfile`**, so
-restore the Podfile from git afterwards (`git checkout ios/Podfile`) — it pins
-CocoaPods' `platform` and `post_install` deployment target to iOS 15.0.
-
-Also set the **Xcode project's** Minimum Deployments to **15.0** (Flutter's
-template still defaults to 13.0). Without that, SPM fails because CloudPayments
-requires iOS 15:
-
-- In `ios/Runner.xcodeproj/project.pbxproj`, set every
-  `IPHONEOS_DEPLOYMENT_TARGET` to `15.0`, or
-- In Xcode: Runner target → General → Minimum Deployments → iOS 15.0
+Do not regenerate it with `flutter create --platforms=ios .` — that resets the
+deployment target to Flutter's default and overwrites `ios/Podfile`, which pins
+the same 15.0 for CocoaPods.
 
 With Swift Package Manager enabled (default on Flutter 3.44+), CloudPayments is
 resolved from the plugin's `Package.swift` at build time — no git pods and no
