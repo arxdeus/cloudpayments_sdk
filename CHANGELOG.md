@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.0
+
+- **Android now requires AGP 8.13.0 or newer.** API 37 is published only as
+  `platforms;android-37.0`, so older plugins cannot resolve the `compileSdk` 37
+  the CloudPayments AAR demands and fail with
+  `Failed to find Platform SDK with path: platforms;android-37`. The module
+  declares its compile SDK through the `release(37) { minorApiLevel = 0 }` DSL.
+- Fixed the `cpSdkHost` manifest placeholder replacing the whole placeholder map
+  instead of adding to it, which dropped the `applicationName` placeholder the
+  Flutter Gradle plugin sets and broke the manifest merge.
+
+- **iOS dependency via Swift Package Manager.** The plugin's `Package.swift`
+  pulls CloudPayments **2.1.6** from gitpub, so SPM-enabled apps (default on
+  Flutter 3.44+) no longer add CloudPayments git pods to `ios/Podfile`. CocoaPods
+  dual support remains: when SPM is disabled, the existing Podfile git-pod
+  instructions still apply. Android still requires the JitPack repository.
+
 ## 0.2.0
 
 - **The ready-made CloudPayments payment form.** `CloudpaymentsSdk.presentPaymentForm()`

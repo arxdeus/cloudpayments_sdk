@@ -3,7 +3,7 @@ description: >-
   CloudPayments for Flutter: card validation, cryptogram generation through the
   official native iOS and Android SDKs, the Payment API, and 3-D Secure in a
   native WebView.
-version: 0.2.0
+version: 0.3.0
 repository: https://github.com/cloudpayments-community/cloudpayments_sdk
 issue_tracker: https://github.com/cloudpayments-community/cloudpayments_sdk/issues
 

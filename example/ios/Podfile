@@ -30,22 +30,12 @@ flutter_ios_podfile_setup
 target 'Runner' do
   use_frameworks!
 
-  # ---------------------------------------------------------------------------
-  # REQUIRED for cloudpayments_sdk.
+  # CloudPayments is resolved by the plugin's Package.swift via Swift Package
+  # Manager (default on Flutter 3.44+). Do not add Cloudpayments git pods here
+  # — that would double-link when SPM is on.
   #
-  # The official CloudPayments iOS SDK is not published to the CocoaPods trunk,
-  # and a plugin's podspec cannot point a dependency at a git repository — so
-  # these two lines have to live in the app's Podfile.
-  #
-  # The podspec inside the repository still names github.com as its source, and
-  # that repository is archived at 1.3.3; the `:git` override below is what
-  # makes 2.x resolve.
-  # ---------------------------------------------------------------------------
-  cloudpayments_sdk_version = '2.1.6'
-  cloudpayments_sdk_git = 'https://gitpub.cloudpayments.ru/integrations/sdk/cloudpayments-ios.git'
-
-  pod 'Cloudpayments', :git => cloudpayments_sdk_git, :tag => cloudpayments_sdk_version
-  pod 'CloudpaymentsNetworking', :git => cloudpayments_sdk_git, :tag => cloudpayments_sdk_version
+  # If you disable SPM (`flutter config --no-enable-swift-package-manager`),
+  # add both pods from the package README's CocoaPods fallback section.
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 

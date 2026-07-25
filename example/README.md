@@ -35,15 +35,21 @@ flutter create --platforms=ios .
 ```
 
 That regenerates `ios/Runner.xcodeproj` **and overwrites `ios/Podfile`**, so
-restore the Podfile from git afterwards (`git checkout ios/Podfile`) — it carries
-the two `pod ... :git =>` lines that make the CloudPayments SDK resolve, which a
-generated Podfile will not have.
+restore the Podfile from git afterwards (`git checkout ios/Podfile`) — it pins
+CocoaPods' `platform` and `post_install` deployment target to iOS 15.0.
 
-Then:
+Also set the **Xcode project's** Minimum Deployments to **15.0** (Flutter's
+template still defaults to 13.0). Without that, SPM fails because CloudPayments
+requires iOS 15:
 
-```bash
-cd ios && pod install
-```
+- In `ios/Runner.xcodeproj/project.pbxproj`, set every
+  `IPHONEOS_DEPLOYMENT_TARGET` to `15.0`, or
+- In Xcode: Runner target → General → Minimum Deployments → iOS 15.0
+
+With Swift Package Manager enabled (default on Flutter 3.44+), CloudPayments is
+resolved from the plugin's `Package.swift` at build time — no git pods and no
+separate `pod install` step for that SDK. If you disable SPM, add the CocoaPods
+fallback from the package README before building.
 
 ## Trying a payment
 

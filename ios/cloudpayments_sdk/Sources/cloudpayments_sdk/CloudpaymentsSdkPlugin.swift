@@ -12,7 +12,7 @@ public class CloudpaymentsSdkPlugin: NSObject, FlutterPlugin {
     private static let channelName = "ru.cloudpayments.flutter/cloudpayments_sdk"
 
     /// The CloudPayments iOS SDK release this plugin is written against.
-    /// Reported to Dart for diagnostics; keep it in step with the Podfile.
+    /// Reported to Dart for diagnostics; keep it in step with Package.swift.
     private static let nativeSdkVersion = "2.1.6"
 
     /// How long to wait for the 3-D Secure screen to actually appear.

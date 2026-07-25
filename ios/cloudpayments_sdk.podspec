@@ -1,7 +1,11 @@
 #
-# The CloudPayments iOS SDK is not published to the CocoaPods trunk, so the
-# `Cloudpayments` dependency below can only be resolved if the *app's* Podfile
-# points at the source repository. Add this to `ios/Podfile`:
+# Dual CocoaPods + Swift Package Manager support.
+#
+# With Swift Package Manager enabled (default on Flutter 3.44+), the plugin's
+# Package.swift resolves CloudPayments from git — no Podfile git pods needed.
+#
+# When SPM is disabled, the CloudPayments iOS SDK is not on the CocoaPods trunk,
+# so the app's Podfile must point at the source repository:
 #
 #   pod 'Cloudpayments', :git => 'https://gitpub.cloudpayments.ru/integrations/sdk/cloudpayments-ios.git', :tag => '2.1.6'
 #   pod 'CloudpaymentsNetworking', :git => 'https://gitpub.cloudpayments.ru/integrations/sdk/cloudpayments-ios.git', :tag => '2.1.6'
@@ -10,7 +14,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'cloudpayments_sdk'
-  s.version          = '0.2.0'
+  s.version          = '0.3.0'
   s.summary          = 'CloudPayments for Flutter — cryptograms and 3-D Secure through the official iOS SDK.'
   s.description      = <<-DESC
 Flutter bindings for the official CloudPayments iOS SDK: card cryptogram
@@ -20,7 +24,7 @@ generation and the 3-D Secure WebView flow.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'cloudpayments_sdk contributors' => 'noreply@example.com' }
   s.source           = { :path => '.' }
-  s.source_files     = 'Classes/**/*'
+  s.source_files     = 'cloudpayments_sdk/Sources/cloudpayments_sdk/**/*'
 
   s.dependency 'Flutter'
   # Constrained on purpose: this plugin calls 2.x-only signatures

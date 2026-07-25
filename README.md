@@ -92,12 +92,13 @@ entirely, and their READMEs now tell you to call the REST API yourself.
 
 ```yaml
 dependencies:
-  cloudpayments_sdk: ^0.1.0
+  cloudpayments_sdk: ^0.3.0
 ```
 
-Neither native SDK is on Maven Central or the CocoaPods trunk, so **both
-platforms need one edit in your app**. There is no way around this: a Flutter
-plugin cannot declare where a dependency comes from, only that it needs one.
+Android still needs a one-line JitPack repository edit. On iOS, Swift Package
+Manager (default on Flutter 3.44+) resolves CloudPayments from the plugin's
+`Package.swift` — no Podfile git pods. If you disable SPM, use the CocoaPods
+fallback below.
 
 ### Android
 
@@ -118,8 +119,14 @@ In `android/app/build.gradle`:
 ```gradle
 android {
     // Required, not a preference: the CloudPayments AAR declares
-    // minCompileSdk=37 and AGP fails the build of anything lower.
-    compileSdk = 37
+    // minCompileSdk=37 and AGP fails the build of anything lower. API 37 is
+    // published only as `platforms;android-37.0`, so the minor level has to be
+    // spelled out or AGP looks for a `platforms;android-37` that cannot exist.
+    compileSdk {
+        version = release(37) {
+            it.minorApiLevel = 0
+        }
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17   // the SDK targets Java 17
         targetCompatibility = JavaVersion.VERSION_17
@@ -131,8 +138,10 @@ android {
 
         // REQUIRED. The SDK's manifest declares a deep-link host through this
         // placeholder and the manifest merger fails without it. An empty string
-        // is what CloudPayments documents for card-only flows.
-        manifestPlaceholders = [cpSdkHost: ""]
+        // is what CloudPayments documents for card-only flows. Add to the map
+        // instead of assigning it — the Flutter Gradle plugin has already put
+        // `applicationName` in there, and replacing the map drops it.
+        manifestPlaceholders["cpSdkHost"] = ""
     }
 }
 ```
@@ -147,13 +156,11 @@ plugins {
 }
 ```
 
-If your Android Gradle Plugin predates API 37 it will refuse the unfamiliar
-`compileSdk`. Either move to an AGP that knows about it, or add this to
-`android/gradle.properties`:
-
-```properties
-android.suppressUnsupportedCompileSdk=37
-```
+Your app also needs **Android Gradle Plugin 8.13.0 or newer**. That is the first
+release that understands minor-versioned SDK platforms; earlier versions cannot
+resolve `compileSdk` 37 at all and fail with
+`Failed to find Platform SDK with path: platforms;android-37`. The example app
+is built with AGP 9.0.1 and Gradle 9.1.0.
 
 These requirements come from the SDK, not from this package. Resolved
 dependency versions, `minCompileSdk` and the manifest placeholder were all read
@@ -165,9 +172,21 @@ To pin a different SDK release, set `ext.cloudpaymentsAndroidSdkVersion` in
 
 ### iOS
 
-Minimum deployment target is **iOS 15.0**. Add both CloudPayments pods to
-`ios/Podfile` — the plugin's podspec depends on them but cannot say where they
-live:
+Minimum deployment target is **iOS 15.0**. Set that on the Xcode **Runner**
+target as well (Flutter's `flutter create` template still defaults to 13.0) —
+otherwise SPM cannot link CloudPayments.
+
+With Swift Package Manager enabled (the default on Flutter 3.44+), you do not
+need to edit `ios/Podfile`. The plugin declares CloudPayments **2.1.6** from
+<https://gitpub.cloudpayments.ru/integrations/sdk/cloudpayments-ios.git> in its
+`Package.swift`, and Flutter resolves it at build time.
+
+#### CocoaPods fallback
+
+If SPM is off (`flutter config --no-enable-swift-package-manager`, or
+`enable-swift-package-manager: false` in your app `pubspec.yaml`), add both
+CloudPayments pods to `ios/Podfile` — the plugin's podspec depends on them but
+cannot say where they live:
 
 ```ruby
 platform :ios, '15.0'
@@ -185,7 +204,7 @@ end
 
 > The podspec inside that repository still names `github.com/cloudpayments` as
 > its source, and that repository is archived at 1.3.3. The `:git` override
-> above is what makes 2.x resolve.
+> above is what makes 2.x resolve under CocoaPods.
 
 ---
 
