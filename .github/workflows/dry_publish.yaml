@@ -1,0 +1,33 @@
+name: Dry Run
+
+on:
+  push:
+    branches:
+      - "release/**"
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - edited
+      - synchronize
+    branches:
+      - 'main'
+jobs:
+  dry_publish:
+    name: "Dry Publish - ${{ strategy.job-index }}"
+    runs-on: ubuntu-latest
+    steps:
+    - name: "Checkout repository"
+      uses: actions/checkout@v4
+      with:
+        fetch-tags: true
+        fetch-depth: 0
+
+    - name: "Setup Dart"
+      uses: dart-lang/setup-dart@v1
+      with:
+        sdk: stable
+
+    - name: "Run Dry Publish"
+      shell: bash
+      run: dart pub publish --dry-run
