@@ -35,13 +35,11 @@ The runner builds as-is. `ios/Runner.xcodeproj` is checked in with every
 and Flutter's template does not default to.
 
 Do not regenerate it with `flutter create --platforms=ios .` — that resets the
-deployment target to Flutter's default and overwrites `ios/Podfile`, which pins
-the same 15.0 for CocoaPods.
+deployment target to Flutter's default and may reintroduce CocoaPods scaffolding.
 
-With Swift Package Manager enabled (default on Flutter 3.44+), CloudPayments is
-resolved from the plugin's `Package.swift` at build time — no git pods and no
-separate `pod install` step for that SDK. If you disable SPM, add the CocoaPods
-fallback from the package README before building.
+The example is SPM-only (no `Podfile`). CloudPayments is resolved from the
+plugin's `Package.swift` at build time. If you disable SPM in a consumer app,
+add the CocoaPods fallback from the package README before building.
 
 ## Trying a payment
 
