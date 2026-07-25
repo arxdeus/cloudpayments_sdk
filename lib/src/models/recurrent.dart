@@ -1,6 +1,5 @@
+import 'package:cloudpayments_sdk/src/models/receipt.dart';
 import 'package:meta/meta.dart';
-
-import 'receipt.dart';
 
 /// How often a subscription charges.
 enum RecurrentInterval {

@@ -1,6 +1,5 @@
+import 'package:cloudpayments_sdk/src/card/card_system.dart';
 import 'package:meta/meta.dart';
-
-import 'card_system.dart';
 
 /// Pure-Dart validation, detection and formatting helpers for card data.
 ///
@@ -18,7 +17,7 @@ abstract final class CardUtils {
   /// Strips every character that is not a decimal digit.
   @useResult
   static String digitsOnly(String input) =>
-      input.replaceAll(RegExp(r'[^0-9]'), '');
+      input.replaceAll(RegExp('[^0-9]'), '');
 
   /// Detects the payment system of [number]. Tolerates partial input and any
   /// separators.

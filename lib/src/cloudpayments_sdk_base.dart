@@ -1,21 +1,20 @@
 import 'dart:convert';
 
+import 'package:cloudpayments_sdk/src/api/cloudpayments_api_client.dart';
+import 'package:cloudpayments_sdk/src/api/cloudpayments_exception.dart';
+import 'package:cloudpayments_sdk/src/card/card_data.dart';
+import 'package:cloudpayments_sdk/src/card/card_utils.dart';
+import 'package:cloudpayments_sdk/src/form/payment_form_options.dart';
+import 'package:cloudpayments_sdk/src/form/payment_form_result.dart';
+import 'package:cloudpayments_sdk/src/models/payment_request.dart';
+import 'package:cloudpayments_sdk/src/models/payment_result.dart';
+import 'package:cloudpayments_sdk/src/models/public_key.dart';
+import 'package:cloudpayments_sdk/src/models/recurrent.dart';
+import 'package:cloudpayments_sdk/src/models/transaction.dart';
+import 'package:cloudpayments_sdk/src/platform/cloudpayments_sdk_platform.dart';
+import 'package:cloudpayments_sdk/src/platform/three_ds_result.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-
-import 'api/cloudpayments_api_client.dart';
-import 'api/cloudpayments_exception.dart';
-import 'card/card_data.dart';
-import 'card/card_utils.dart';
-import 'form/payment_form_options.dart';
-import 'form/payment_form_result.dart';
-import 'models/payment_request.dart';
-import 'models/payment_result.dart';
-import 'models/public_key.dart';
-import 'models/recurrent.dart';
-import 'models/transaction.dart';
-import 'platform/cloudpayments_sdk_platform.dart';
-import 'platform/three_ds_result.dart';
 
 /// The entry point of the package: card data in, paid transaction out.
 ///

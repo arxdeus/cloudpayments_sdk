@@ -79,22 +79,22 @@ enum CardSystem {
 /// Ordered most-specific-first: the first pattern that matches wins, so narrow
 /// ranges (Maestro's `6759`, MIR's `220x`) must precede broad ones (`6…`).
 final List<(RegExp, CardSystem)> _binRules = <(RegExp, CardSystem)>[
-  (RegExp(r'^220[0-4]'), CardSystem.mir),
-  (RegExp(r'^9792'), CardSystem.troy),
-  (RegExp(r'^8600'), CardSystem.uzCard),
-  (RegExp(r'^9860'), CardSystem.humo),
+  (RegExp('^220[0-4]'), CardSystem.mir),
+  (RegExp('^9792'), CardSystem.troy),
+  (RegExp('^8600'), CardSystem.uzCard),
+  (RegExp('^9860'), CardSystem.humo),
   (
-    RegExp(r'^(5018|5020|5038|5893|6304|6759|676[1-3]|0604|6390|5[6-8])'),
+    RegExp('^(5018|5020|5038|5893|6304|6759|676[1-3]|0604|6390|5[6-8])'),
     CardSystem.maestro,
   ),
-  (RegExp(r'^4'), CardSystem.visa),
+  (RegExp('^4'), CardSystem.visa),
   (
-    RegExp(r'^(5[1-5]|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)'),
+    RegExp('^(5[1-5]|222[1-9]|22[3-9][0-9]|2[3-6][0-9]{2}|27[01][0-9]|2720)'),
     CardSystem.masterCard,
   ),
-  (RegExp(r'^3[47]'), CardSystem.americanExpress),
-  (RegExp(r'^(2131|1800|35)'), CardSystem.jcb),
-  (RegExp(r'^3(0[0-5]|[68][0-9])'), CardSystem.dinersClub),
-  (RegExp(r'^(6011|64[4-9]|65)'), CardSystem.discover),
-  (RegExp(r'^62'), CardSystem.unionPay),
+  (RegExp('^3[47]'), CardSystem.americanExpress),
+  (RegExp('^(2131|1800|35)'), CardSystem.jcb),
+  (RegExp('^3(0[0-5]|[68][0-9])'), CardSystem.dinersClub),
+  (RegExp('^(6011|64[4-9]|65)'), CardSystem.discover),
+  (RegExp('^62'), CardSystem.unionPay),
 ];

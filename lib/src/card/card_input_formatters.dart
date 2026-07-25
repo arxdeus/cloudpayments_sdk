@@ -1,7 +1,6 @@
+import 'package:cloudpayments_sdk/src/card/card_system.dart';
+import 'package:cloudpayments_sdk/src/card/card_utils.dart';
 import 'package:flutter/services.dart';
-
-import 'card_system.dart';
-import 'card_utils.dart';
 
 /// Groups a card number as the user types — `4111 1111 1111 1111` — using the
 /// grouping of the detected payment system, and caps the length at 19 digits.

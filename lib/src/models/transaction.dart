@@ -1,6 +1,5 @@
+import 'package:cloudpayments_sdk/src/card/card_system.dart';
 import 'package:meta/meta.dart';
-
-import '../card/card_system.dart';
 
 /// The lifecycle state of a transaction, as reported in `Model.Status`.
 enum TransactionStatus {

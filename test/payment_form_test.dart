@@ -27,6 +27,7 @@ class _FakeFormPlatform extends CloudpaymentsSdkPlatform
     calls++;
     lastArguments = arguments;
     final failure = error;
+    // ignore: only_throw_errors
     if (failure != null) throw failure;
     return answer;
   }
@@ -43,7 +44,6 @@ void main() {
       await _sdk(platform).presentPaymentForm(
         details: const PaymentDetails(
           amount: 499,
-          currency: Currency.rub,
           invoiceId: 'ORDER-7',
           description: 'Подписка',
           accountId: 'user-42',
@@ -233,9 +233,7 @@ void main() {
 
   group('presentPaymentForm results', () {
     test('a finished payment', () async {
-      final platform = _FakeFormPlatform(
-        answer: const {'status': 'succeeded', 'transactionId': 900},
-      );
+      final platform = _FakeFormPlatform();
 
       final result = await _sdk(platform).presentPaymentForm(
         details: const PaymentDetails(amount: 10),

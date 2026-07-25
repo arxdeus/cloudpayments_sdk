@@ -1,7 +1,6 @@
+import 'package:cloudpayments_sdk/src/platform/cloudpayments_sdk_method_channel.dart';
+import 'package:cloudpayments_sdk/src/platform/three_ds_result.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
-
-import 'cloudpayments_sdk_method_channel.dart';
-import 'three_ds_result.dart';
 
 /// The interface every platform implementation of this plugin must satisfy.
 ///

@@ -1,7 +1,6 @@
+import 'package:cloudpayments_sdk/src/card/card_system.dart';
+import 'package:cloudpayments_sdk/src/card/card_utils.dart';
 import 'package:meta/meta.dart';
-
-import 'card_system.dart';
-import 'card_utils.dart';
 
 /// Raw card details, on their way to being encrypted.
 ///

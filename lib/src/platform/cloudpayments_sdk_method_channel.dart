@@ -1,8 +1,7 @@
+import 'package:cloudpayments_sdk/src/platform/cloudpayments_sdk_platform.dart';
+import 'package:cloudpayments_sdk/src/platform/three_ds_result.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-
-import 'cloudpayments_sdk_platform.dart';
-import 'three_ds_result.dart';
 
 /// The default [CloudpaymentsSdkPlatform], talking to the Android and iOS
 /// implementations over a [MethodChannel].

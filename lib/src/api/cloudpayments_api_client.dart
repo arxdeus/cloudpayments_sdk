@@ -2,15 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cloudpayments_sdk/src/api/cloudpayments_exception.dart';
+import 'package:cloudpayments_sdk/src/models/bin_info.dart';
+import 'package:cloudpayments_sdk/src/models/payment_request.dart';
+import 'package:cloudpayments_sdk/src/models/payment_result.dart';
+import 'package:cloudpayments_sdk/src/models/public_key.dart';
+import 'package:cloudpayments_sdk/src/models/three_ds_callback_result.dart';
+import 'package:cloudpayments_sdk/src/models/transaction.dart';
 import 'package:http/http.dart' as http;
-
-import '../models/bin_info.dart';
-import '../models/payment_request.dart';
-import '../models/payment_result.dart';
-import '../models/public_key.dart';
-import '../models/three_ds_callback_result.dart';
-import '../models/transaction.dart';
-import 'cloudpayments_exception.dart';
 
 /// A typed client for the CloudPayments Payment API.
 ///
@@ -137,7 +136,7 @@ class CloudpaymentsApiClient {
   /// Returns [PaymentSuccess] when the money has been taken,
   /// [PaymentRequiresThreeDs] when the issuer wants the cardholder to
   /// authenticate, or [PaymentDeclined] when the issuer refused.
-  Future<PaymentResult> charge(CardPaymentRequest request) async =>
+  Future<PaymentResult> charge(CardPaymentRequest request) =>
       _payment('payments/cards/charge', request.toJson());
 
   /// Runs the first stage of a two-stage payment: hold the funds without
@@ -145,14 +144,14 @@ class CloudpaymentsApiClient {
   ///
   /// Capture later with [confirm], or release with [voidPayment]. Both need
   /// the API secret, so they belong on your backend.
-  Future<PaymentResult> auth(CardPaymentRequest request) async =>
+  Future<PaymentResult> auth(CardPaymentRequest request) =>
       _payment('payments/cards/auth', request.toJson());
 
   /// Charges a saved card by token, in one stage.
   ///
   /// Requires the API secret — CloudPayments does not open token payments to
   /// Public ID clients. Call this from your backend.
-  Future<PaymentResult> chargeToken(TokenPaymentRequest request) async {
+  Future<PaymentResult> chargeToken(TokenPaymentRequest request) {
     _requireSecret('chargeToken');
     return _payment('payments/tokens/charge', request.toJson());
   }
@@ -160,7 +159,7 @@ class CloudpaymentsApiClient {
   /// Authorises a saved card by token, without capturing.
   ///
   /// Requires the API secret. Call this from your backend.
-  Future<PaymentResult> authToken(TokenPaymentRequest request) async {
+  Future<PaymentResult> authToken(TokenPaymentRequest request) {
     _requireSecret('authToken');
     return _payment('payments/tokens/auth', request.toJson());
   }
@@ -257,7 +256,7 @@ class CloudpaymentsApiClient {
     // One timeout around the whole exchange: a deadline on the headers alone
     // would leave a stalled body read hanging forever.
     final response = await _run(
-      () async => Future<http.Response>(() async {
+      () => Future<http.Response>(() async {
         final streamed = await _http.send(request);
         return http.Response.fromStream(streamed);
       }).timeout(timeout),
@@ -429,7 +428,7 @@ class CloudpaymentsApiClient {
   /// Works with a Public ID alone. Useful for showing a bank logo while the
   /// user is still typing.
   Future<BinInfo?> getBinInfo(String firstSixDigits) async {
-    final digits = firstSixDigits.replaceAll(RegExp(r'[^0-9]'), '');
+    final digits = firstSixDigits.replaceAll(RegExp('[^0-9]'), '');
     if (digits.length < 6) {
       throw const CloudpaymentsConfigurationException(
         'getBinInfo needs at least the first 6 digits of the card number',
@@ -484,7 +483,7 @@ class CloudpaymentsApiClient {
     bool expectSuccess = false,
   }) async {
     final uri = _uri(path);
-    final response = await _run(() async {
+    final response = await _run(() {
       switch (method) {
         case 'GET':
           return _http.get(uri, headers: _headers()).timeout(timeout);

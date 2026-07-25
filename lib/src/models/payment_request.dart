@@ -1,11 +1,10 @@
 import 'dart:convert';
 
+import 'package:cloudpayments_sdk/src/models/currency.dart';
+import 'package:cloudpayments_sdk/src/models/payer.dart';
+import 'package:cloudpayments_sdk/src/models/receipt.dart';
+import 'package:cloudpayments_sdk/src/models/recurrent.dart';
 import 'package:meta/meta.dart';
-
-import 'currency.dart';
-import 'payer.dart';
-import 'receipt.dart';
-import 'recurrent.dart';
 
 /// Everything about a payment except *how* it is paid for.
 ///

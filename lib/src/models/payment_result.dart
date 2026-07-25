@@ -1,6 +1,5 @@
+import 'package:cloudpayments_sdk/src/models/transaction.dart';
 import 'package:meta/meta.dart';
-
-import 'transaction.dart';
 
 /// The outcome of a payment.
 ///

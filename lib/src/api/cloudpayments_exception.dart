@@ -29,7 +29,7 @@ sealed class CloudpaymentsException implements Exception {
   final String message;
 
   @override
-  String toString() => '$runtimeType: $message';
+  String toString() => 'CloudpaymentsException: $message';
 }
 
 /// The package was used incorrectly — `pay()` before `init()`, an empty Public
@@ -38,6 +38,9 @@ sealed class CloudpaymentsException implements Exception {
 class CloudpaymentsConfigurationException extends CloudpaymentsException {
   /// Creates a configuration error.
   const CloudpaymentsConfigurationException(super.message);
+
+  @override
+  String toString() => 'CloudpaymentsConfigurationException: $message';
 }
 
 /// The request never reached CloudPayments, or the response could not be read:
@@ -74,6 +77,10 @@ class CloudpaymentsApiException extends CloudpaymentsException {
 
   /// The decoded response body, for diagnostics.
   final Map<String, dynamic>? raw;
+
+  @override
+  String toString() => 'CloudpaymentsApiException: $message'
+      '${raw != null ? ' (raw: $raw)' : ''}';
 }
 
 /// The native SDK could not build a card cryptogram.
@@ -87,4 +94,8 @@ class CloudpaymentsCryptogramException extends CloudpaymentsException {
 
   /// The platform error code from the native side, when there was one.
   final String? code;
+
+  @override
+  String toString() => 'CloudpaymentsCryptogramException: $message'
+      '${code != null ? ' (code: $code)' : ''}';
 }
