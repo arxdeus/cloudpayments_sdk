@@ -1,6 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
         <!--
+            The official payment form Activity keeps legacy onBackPressed
+            handling. On Android 13+ predictive back can bypass that path on
+            the SDK's failed-payment result screen and leave the Activity open.
+            Opt it out so back gestures close it through the SDK's legacy code.
+        -->
+        <activity
+            android:name="ru.cloudpayments.sdk.ui.PaymentActivity"
+            android:enableOnBackInvokedCallback="false" />
+
+        <!--
             The 3-D Secure screen. It hosts the official SDK's
             ThreeDsDialogFragment, which needs a host that implements
             ThreeDSDialogListener — a plain FlutterActivity does not, which is

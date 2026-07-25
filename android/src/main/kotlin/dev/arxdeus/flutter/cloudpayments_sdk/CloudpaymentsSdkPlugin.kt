@@ -2,7 +2,17 @@ package dev.arxdeus.flutter.cloudpayments_sdk
 
 import android.app.Activity
 import android.app.ActivityManager
+import android.app.Application
+import android.content.Context
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.Rect
+import android.graphics.drawable.ColorDrawable
+import android.os.Bundle
+import android.view.MotionEvent
+import android.view.View
+import android.view.ViewGroup
+import java.util.ArrayDeque
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -34,10 +44,13 @@ class CloudpaymentsSdkPlugin :
         const val CHANNEL_NAME = "dev.arxdeus.flutter/cloudpayments_sdk"
         const val THREE_DS_REQUEST_CODE = 0xCA5D
         const val PAYMENT_FORM_REQUEST_CODE = 0xCA5E
+        const val PAYMENT_ACTIVITY_CLASS = "ru.cloudpayments.sdk.ui.PaymentActivity"
     }
 
     private var channel: MethodChannel? = null
     private var activityBinding: ActivityPluginBinding? = null
+    private var application: Application? = null
+    private var paymentActivity: Activity? = null
 
     /** The Dart call waiting on the 3-D Secure screen, if any. */
     private var pendingThreeDsResult: MethodChannel.Result? = null
@@ -45,9 +58,38 @@ class CloudpaymentsSdkPlugin :
     /** The Dart call waiting on the ready-made payment form, if any. */
     private var pendingFormResult: MethodChannel.Result? = null
 
+    /** Host-side shield: consumes touches that fall through the translucent SDK Activity. */
+    private var paymentTouchBlocker: View? = null
+
+    /** In-SDK shield: handles empty-area taps on SDK result dialogs/screens. */
+    private var paymentActivityTouchBlocker: View? = null
+
+    private val activityLifecycleCallbacks = object : Application.ActivityLifecycleCallbacks {
+        override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) = Unit
+        override fun onActivityStarted(activity: Activity) = Unit
+        override fun onActivityPaused(activity: Activity) = Unit
+        override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) = Unit
+        override fun onActivityStopped(activity: Activity) = Unit
+
+        override fun onActivityResumed(activity: Activity) {
+            if (activity.javaClass.name != PAYMENT_ACTIVITY_CLASS) return
+            paymentActivity = activity
+            if (pendingFormResult != null) installPaymentActivityTouchBlocker(activity)
+        }
+
+        override fun onActivityDestroyed(activity: Activity) {
+            if (paymentActivity === activity) {
+                removePaymentActivityTouchBlocker()
+                paymentActivity = null
+            }
+        }
+    }
+
     // --- FlutterPlugin --------------------------------------------------------
 
     override fun onAttachedToEngine(binding: FlutterPlugin.FlutterPluginBinding) {
+        application = binding.applicationContext as? Application
+        application?.registerActivityLifecycleCallbacks(activityLifecycleCallbacks)
         channel = MethodChannel(binding.binaryMessenger, CHANNEL_NAME).apply {
             setMethodCallHandler(this@CloudpaymentsSdkPlugin)
         }
@@ -58,6 +100,12 @@ class CloudpaymentsSdkPlugin :
         // is the only place it is safe to abandon a pending call — the host
         // activity coming and going is not, because a cached engine outlives
         // it and the real 3-D Secure result still arrives afterwards.
+        //
+        // Hot restart detaches the engine while native Android screens keep
+        // running. Close them explicitly; otherwise the stale CloudPayments
+        // Activity stays above the restarted Flutter app, and the SDK/plugin
+        // state prevents the next payment screen from opening.
+        closePendingNativeScreens()
         finishPendingThreeDs(
             mapOf(
                 "status" to CloudpaymentsThreeDsActivity.STATUS_FAILURE,
@@ -66,6 +114,8 @@ class CloudpaymentsSdkPlugin :
             )
         )
         finishPendingForm(mapOf("status" to "closed"))
+        application?.unregisterActivityLifecycleCallbacks(activityLifecycleCallbacks)
+        application = null
         channel?.setMethodCallHandler(null)
         channel = null
     }
@@ -103,6 +153,9 @@ class CloudpaymentsSdkPlugin :
         detach()
         activityBinding = binding
         binding.addActivityResultListener(this)
+        if (pendingFormResult != null) {
+            installPaymentTouchBlocker(binding.activity)
+        }
     }
 
     private fun detach() {
@@ -114,6 +167,12 @@ class CloudpaymentsSdkPlugin :
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
+            "cleanupNativeScreens" -> {
+                closePendingNativeScreens()
+                pendingThreeDsResult = null
+                pendingFormResult = null
+                result.success(null)
+            }
             "createCryptogram" -> createCryptogram(call, result)
             "show3ds" -> showThreeDs(call, result)
             "presentPaymentForm" -> presentPaymentForm(call, result)
@@ -308,6 +367,7 @@ class CloudpaymentsSdkPlugin :
         }
 
         pendingFormResult = result
+        installPaymentTouchBlocker(activity)
         try {
             activity.startActivityForResult(
                 CloudpaymentsSDK.getInstance().getStartIntent(activity, configuration),
@@ -315,6 +375,7 @@ class CloudpaymentsSdkPlugin :
             )
         } catch (e: Exception) {
             pendingFormResult = null
+            removePaymentTouchBlocker()
             result.error(
                 "form_failed",
                 "Could not open the payment form: ${e.message}",
@@ -372,7 +433,77 @@ class CloudpaymentsSdkPlugin :
     private fun finishPendingForm(payload: Map<String, Any?>) {
         val result = pendingFormResult ?: return
         pendingFormResult = null
+        removePaymentTouchBlocker()
+        removePaymentActivityTouchBlocker()
         result.success(payload)
+    }
+
+    private fun installPaymentTouchBlocker(activity: Activity) {
+        removePaymentTouchBlocker()
+
+        val root = activity.window?.decorView as? ViewGroup ?: return
+
+        paymentTouchBlocker = View(activity).apply {
+            isClickable = true
+            isFocusable = true
+            importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+            setOnTouchListener { _, event ->
+                if (event.action == MotionEvent.ACTION_UP) {
+                    activity.finishActivity(PAYMENT_FORM_REQUEST_CODE)
+                }
+                true
+            }
+        }
+        root.addView(
+            paymentTouchBlocker,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            ),
+        )
+        paymentTouchBlocker?.bringToFront()
+        paymentTouchBlocker?.elevation = Float.MAX_VALUE
+    }
+
+    private fun removePaymentTouchBlocker() {
+        val blocker = paymentTouchBlocker ?: return
+        (blocker.parent as? ViewGroup)?.removeView(blocker)
+        paymentTouchBlocker = null
+    }
+
+    private fun installPaymentActivityTouchBlocker(activity: Activity) {
+        removePaymentActivityTouchBlocker()
+
+        val root = activity.window?.decorView as? ViewGroup ?: return
+        paymentActivityTouchBlocker = PaymentActivityTouchBlockerView(activity) {
+            activity.finish()
+        }
+        root.addView(
+            paymentActivityTouchBlocker,
+            ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            ),
+        )
+        paymentActivityTouchBlocker?.bringToFront()
+        paymentActivityTouchBlocker?.elevation = Float.MAX_VALUE
+    }
+
+    private fun removePaymentActivityTouchBlocker() {
+        val blocker = paymentActivityTouchBlocker ?: return
+        (blocker.parent as? ViewGroup)?.removeView(blocker)
+        paymentActivityTouchBlocker = null
+    }
+
+    private fun closePendingNativeScreens() {
+        val activity = activityBinding?.activity ?: return
+        if (pendingThreeDsResult != null) {
+            activity.finishActivity(THREE_DS_REQUEST_CODE)
+        }
+        if (pendingFormResult != null) {
+            paymentActivity?.finish()
+            activity.finishActivity(PAYMENT_FORM_REQUEST_CODE)
+        }
     }
 
     /** Whether this process is foreground enough to be allowed to start an Activity. */
@@ -455,5 +586,90 @@ class CloudpaymentsSdkPlugin :
         val result = pendingThreeDsResult ?: return
         pendingThreeDsResult = null
         result.success(payload)
+    }
+}
+
+/**
+ * Transparent overlay on the SDK [PaymentActivity] that closes the screen when
+ * the user taps empty/dimmed background, while letting taps on opaque sheet
+ * content through (mirrors iOS [PaymentTouchBlockerWindow] hit-testing).
+ */
+private class PaymentActivityTouchBlockerView(
+    context: Context,
+    private val onBackgroundTap: () -> Unit,
+) : View(context) {
+
+    init {
+        isClickable = true
+        isFocusable = true
+        importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
+        setBackgroundColor(Color.TRANSPARENT)
+    }
+
+    override fun dispatchTouchEvent(event: MotionEvent): Boolean {
+        if (isInsidePaymentContent(event)) {
+            val root = parent as? ViewGroup ?: return false
+            visibility = INVISIBLE
+            val handled = root.dispatchTouchEvent(event)
+            visibility = VISIBLE
+            return handled
+        }
+        return super.dispatchTouchEvent(event)
+    }
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+        if (event.actionMasked == MotionEvent.ACTION_UP) {
+            onBackgroundTap()
+        }
+        return true
+    }
+
+    private fun isInsidePaymentContent(event: MotionEvent): Boolean {
+        val root = parent as? ViewGroup ?: return false
+        val rootArea = maxOf(root.width * root.height, 1).toFloat()
+        val stack = ArrayDeque<View>()
+        for (index in 0 until root.childCount) {
+            val child = root.getChildAt(index)
+            if (child !== this) {
+                stack.addLast(child)
+            }
+        }
+
+        val hitRect = Rect()
+        while (stack.isNotEmpty()) {
+            val view = stack.removeLast()
+            if (view.visibility != VISIBLE || view.alpha <= 0.01f) continue
+
+            when (view) {
+                is ViewGroup -> {
+                    for (index in 0 until view.childCount) {
+                        stack.addLast(view.getChildAt(index))
+                    }
+                }
+            }
+
+            if (!view.getGlobalVisibleRect(hitRect)) continue
+            if (!hitRect.contains(event.rawX.toInt(), event.rawY.toInt())) continue
+
+            val viewArea = hitRect.width().toFloat() * hitRect.height().toFloat()
+            val isAlmostFullscreen = viewArea >= rootArea * 0.92f &&
+                hitRect.width() >= root.width * 0.92f &&
+                hitRect.height() >= root.height * 0.92f
+
+            val backgroundAlpha = viewBackgroundAlpha(view)
+            val largeEnough = view.width > 80 && view.height > 80
+            if (backgroundAlpha > 2 && largeEnough && !isAlmostFullscreen) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun viewBackgroundAlpha(view: View): Int {
+        val background = view.background ?: return 0
+        return when (background) {
+            is ColorDrawable -> Color.alpha(background.color)
+            else -> background.alpha
+        }
     }
 }

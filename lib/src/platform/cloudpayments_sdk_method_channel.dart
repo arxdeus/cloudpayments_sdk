@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloudpayments_sdk/src/platform/cloudpayments_sdk_platform.dart';
 import 'package:cloudpayments_sdk/src/platform/three_ds_result.dart';
 import 'package:flutter/foundation.dart';
@@ -6,11 +8,30 @@ import 'package:flutter/services.dart';
 /// The default [CloudpaymentsSdkPlatform], talking to the Android and iOS
 /// implementations over a [MethodChannel].
 class MethodChannelCloudpaymentsSdk extends CloudpaymentsSdkPlatform {
+  MethodChannelCloudpaymentsSdk() {
+    methodChannel.setMethodCallHandler(_handleNativeCall);
+    unawaited(cleanupNativeScreens());
+  }
+
   /// The channel shared with the native side. Its name is part of the plugin's
   /// contract — changing it means changing both platforms too.
   @visibleForTesting
   final MethodChannel methodChannel =
       const MethodChannel('dev.arxdeus.flutter/cloudpayments_sdk');
+
+  Future<Object?> _handleNativeCall(MethodCall call) async {
+    if (call.method == 'cloudpaymentsSdkHeartbeat') return true;
+    return null;
+  }
+
+  @override
+  Future<void> cleanupNativeScreens() async {
+    try {
+      await methodChannel.invokeMethod<void>('cleanupNativeScreens');
+    } on MissingPluginException {
+      // Web/tests/unsupported platforms: no native screen to clean.
+    }
+  }
 
   @override
   Future<String> createCryptogram({
@@ -47,6 +68,7 @@ class MethodChannelCloudpaymentsSdk extends CloudpaymentsSdkPlatform {
     required String paReq,
     required String md,
   }) async {
+    await cleanupNativeScreens();
     final result = await methodChannel.invokeMapMethod<Object?, Object?>(
       'show3ds',
       <String, dynamic>{
@@ -67,6 +89,7 @@ class MethodChannelCloudpaymentsSdk extends CloudpaymentsSdkPlatform {
   Future<Map<Object?, Object?>> presentPaymentForm(
     Map<String, dynamic> arguments,
   ) async {
+    await cleanupNativeScreens();
     final result = await methodChannel.invokeMapMethod<Object?, Object?>(
       'presentPaymentForm',
       arguments,

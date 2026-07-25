@@ -25,6 +25,7 @@ public class CloudpaymentsSdkPlugin: NSObject, FlutterPlugin {
     private static let acsTimeout: TimeInterval = 90
 
     private let threeDsProcessor = ThreeDsProcessor()
+    private let channel: FlutterMethodChannel
 
     private var pendingThreeDsResult: FlutterResult?
     private var threeDsController: CloudpaymentsThreeDsViewController?
@@ -37,18 +38,48 @@ public class CloudpaymentsSdkPlugin: NSObject, FlutterPlugin {
     /// alive for the life of the form.
     private var pendingFormResult: FlutterResult?
     private var formConfiguration: PaymentConfiguration?
+    private weak var formPresenter: UIViewController?
+    private var formDismissWatchdog: Timer?
+    private var formMissingPresentedTicks = 0
+    private var paymentTouchBlockerWindow: PaymentTouchBlockerWindow?
+    private var dartHeartbeatWatchdog: Timer?
+    private var dartHeartbeatInFlight = false
+    private var dartHeartbeatMisses = 0
+
+    init(channel: FlutterMethodChannel) {
+        self.channel = channel
+        super.init()
+    }
 
     public static func register(with registrar: FlutterPluginRegistrar) {
+        // During hot restart Flutter creates a new plugin instance, but UIKit
+        // keeps any already-presented native controller alive. The old plugin
+        // instance may no longer have a chance to run detach cleanup, so the
+        // new instance also removes stale CloudPayments screens on startup.
+        dismissStaleNativeScreens()
+
         let channel = FlutterMethodChannel(
             name: channelName,
             binaryMessenger: registrar.messenger()
         )
-        let instance = CloudpaymentsSdkPlugin()
+        let instance = CloudpaymentsSdkPlugin(channel: channel)
         registrar.addMethodCallDelegate(instance, channel: channel)
+    }
+
+    public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
+        // Hot restart tears down the Flutter engine, but UIKit presentations do
+        // not disappear by themselves. Close every native CloudPayments screen
+        // owned by this plugin before dropping pending Dart callbacks;
+        // otherwise the old payment form/3DS controller can stay above the
+        // restarted app and block the next payment attempt.
+        closePendingNativeScreens()
     }
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
+        case "cleanupNativeScreens":
+            abandonPendingNativeScreens()
+            result(nil)
         case "createCryptogram":
             createCryptogram(call, result)
         case "show3ds":
@@ -157,6 +188,7 @@ public class CloudpaymentsSdkPlugin: NSObject, FlutterPlugin {
 
         pendingThreeDsResult = result
         startAcsWatchdog()
+        startDartHeartbeatWatchdog()
 
         threeDsProcessor.make3DSPayment(
             with: ThreeDsData(transactionId: md, paReq: paReq, acsUrl: acsUrl),
@@ -249,6 +281,7 @@ public class CloudpaymentsSdkPlugin: NSObject, FlutterPlugin {
     ///   that is still animating away.
     private func finishThreeDs(_ payload: [String: Any]) {
         cancelAcsWatchdog()
+        cancelDartHeartbeatWatchdog()
         dismissThreeDs()
 
         guard let result = pendingThreeDsResult else { return }
@@ -344,8 +377,14 @@ public class CloudpaymentsSdkPlugin: NSObject, FlutterPlugin {
 
         pendingFormResult = result
         formConfiguration = configuration
+        formPresenter = presenter
+        startFormDismissWatchdog()
+        startDartHeartbeatWatchdog()
 
         PaymentOptionsViewController.present(with: configuration, from: presenter)
+        DispatchQueue.main.async { [weak self] in
+            self?.installPaymentTouchBlocker()
+        }
     }
 
     private static func buildPaymentData(
@@ -414,15 +453,237 @@ public class CloudpaymentsSdkPlugin: NSObject, FlutterPlugin {
         }
     }
 
+    private func startFormDismissWatchdog() {
+        cancelFormDismissWatchdog()
+        formMissingPresentedTicks = 0
+        formDismissWatchdog = Timer.scheduledTimer(
+            withTimeInterval: 0.5,
+            repeats: true
+        ) { [weak self] _ in
+            self?.checkPaymentFormStillPresented()
+        }
+    }
+
+    private func cancelFormDismissWatchdog() {
+        formDismissWatchdog?.invalidate()
+        formDismissWatchdog = nil
+        formMissingPresentedTicks = 0
+    }
+
+    private func startDartHeartbeatWatchdog() {
+        cancelDartHeartbeatWatchdog()
+        dartHeartbeatMisses = 0
+        dartHeartbeatInFlight = false
+        dartHeartbeatWatchdog = Timer.scheduledTimer(
+            withTimeInterval: 1,
+            repeats: true
+        ) { [weak self] _ in
+            self?.checkDartHeartbeat()
+        }
+    }
+
+    private func cancelDartHeartbeatWatchdog() {
+        dartHeartbeatWatchdog?.invalidate()
+        dartHeartbeatWatchdog = nil
+        dartHeartbeatInFlight = false
+        dartHeartbeatMisses = 0
+    }
+
+    private func checkDartHeartbeat() {
+        guard pendingFormResult != nil || pendingThreeDsResult != nil else {
+            cancelDartHeartbeatWatchdog()
+            return
+        }
+
+        if dartHeartbeatInFlight {
+            recordMissedDartHeartbeat()
+            return
+        }
+
+        dartHeartbeatInFlight = true
+        channel.invokeMethod("cloudpaymentsSdkHeartbeat", arguments: nil) { [weak self] response in
+            guard let self = self else { return }
+            self.dartHeartbeatInFlight = false
+
+            if let alive = response as? Bool, alive {
+                self.dartHeartbeatMisses = 0
+            } else {
+                self.recordMissedDartHeartbeat()
+            }
+        }
+    }
+
+    private func recordMissedDartHeartbeat() {
+        dartHeartbeatMisses += 1
+        if dartHeartbeatMisses >= 2 {
+            abandonPendingNativeScreens()
+        }
+    }
+
+    /// CloudPayments' form should always call `onPaymentClosed`, but some
+    /// dismissal paths in the native SDK can remove the presented controller
+    /// without notifying the delegate. In that case the Dart method call would
+    /// never complete and Flutter would keep showing a loader forever.
+    private func checkPaymentFormStillPresented() {
+        guard pendingFormResult != nil else {
+            cancelFormDismissWatchdog()
+            return
+        }
+
+        if Self.deepestCloudpaymentsScreen() == nil {
+            formMissingPresentedTicks += 1
+        } else {
+            formMissingPresentedTicks = 0
+            installPaymentTouchBlocker()
+        }
+
+        // Require two consecutive misses so normal hand-offs inside the native
+        // SDK (dismiss options, then present a progress/result screen) are not
+        // mistaken for a user close during UIKit's transition gap.
+        if formMissingPresentedTicks >= 2 {
+            finishForm(["status": "closed"])
+        }
+    }
+
     /// Delivers the form's outcome to Dart. Safe to call more than once.
     private func finishForm(_ payload: [String: Any]) {
         guard let result = pendingFormResult else { return }
+        cancelFormDismissWatchdog()
+        cancelDartHeartbeatWatchdog()
+        removePaymentTouchBlocker()
         pendingFormResult = nil
         formConfiguration = nil
+        formPresenter = nil
         result(payload)
     }
 
-    private static func topViewController() -> UIViewController? {
+    private func installPaymentTouchBlocker() {
+        guard pendingFormResult != nil,
+              paymentTouchBlockerWindow == nil,
+              let sourceWindow = Self.rootViewController()?.view.window,
+              let scene = sourceWindow.windowScene
+        else { return }
+
+        let blockerWindow = PaymentTouchBlockerWindow(windowScene: scene)
+        blockerWindow.frame = sourceWindow.bounds
+        blockerWindow.windowLevel = sourceWindow.windowLevel + 1
+        blockerWindow.backgroundColor = .clear
+        blockerWindow.isHidden = false
+        blockerWindow.protectedControllerProvider = {
+            Self.deepestCloudpaymentsScreen()
+        }
+        blockerWindow.onBackgroundTap = { [weak self] in
+            guard let self = self, self.pendingFormResult != nil else { return }
+            self.dismissPaymentForm()
+            if let controller = Self.deepestCloudpaymentsScreen(),
+               Self.isCompletedPaymentResultScreen(controller) {
+                self.finishForm(["status": "succeeded"])
+            } else {
+                self.finishForm(["status": "closed"])
+            }
+        }
+
+        paymentTouchBlockerWindow = blockerWindow
+    }
+
+    private func removePaymentTouchBlocker() {
+        paymentTouchBlockerWindow?.isHidden = true
+        paymentTouchBlockerWindow = nil
+    }
+
+    private func closePendingNativeScreens() {
+        if pendingThreeDsResult != nil {
+            finishThreeDs([
+                "status": "failure",
+                "message": "The Flutter engine was detached before 3-D Secure finished.",
+            ])
+        } else {
+            dismissThreeDs()
+        }
+
+        guard pendingFormResult != nil else { return }
+        dismissPaymentForm()
+        finishForm(["status": "closed"])
+    }
+
+    private func abandonPendingNativeScreens() {
+        cancelAcsWatchdog()
+        cancelFormDismissWatchdog()
+        cancelDartHeartbeatWatchdog()
+        dismissThreeDs()
+        dismissPaymentForm()
+        Self.dismissStaleNativeScreens()
+        pendingThreeDsResult = nil
+        pendingFormResult = nil
+        formConfiguration = nil
+        formPresenter = nil
+        removePaymentTouchBlocker()
+    }
+
+    private func dismissPaymentForm() {
+        if let presenter = formPresenter, presenter.presentedViewController != nil {
+            presenter.dismiss(animated: true)
+            return
+        }
+
+        Self.rootViewController()?.dismiss(animated: true)
+    }
+
+    private static func dismissStaleNativeScreens() {
+        let cleanup = {
+            guard let root = rootViewController(), containsCloudpaymentsScreen(root) else {
+                return
+            }
+            root.dismiss(animated: false)
+        }
+
+        if Thread.isMainThread {
+            cleanup()
+        } else {
+            DispatchQueue.main.async(execute: cleanup)
+        }
+    }
+
+    private static func containsCloudpaymentsScreen(_ root: UIViewController) -> Bool {
+        deepestCloudpaymentsScreen(from: root) != nil
+    }
+
+    private static func deepestCloudpaymentsScreen(
+        from root: UIViewController? = rootViewController()
+    ) -> UIViewController? {
+        var current = root?.presentedViewController
+        var match: UIViewController?
+        while let controller = current {
+            if isCloudpaymentsScreen(controller) {
+                match = controller
+            }
+            current = controller.presentedViewController
+        }
+        return match
+    }
+
+    private static func isCloudpaymentsScreen(_ controller: UIViewController) -> Bool {
+        if controller is PaymentOptionsViewController
+            || controller is CloudpaymentsThreeDsViewController {
+            return true
+        }
+
+        let reflectedType = String(reflecting: type(of: controller))
+        return reflectedType.hasPrefix("Cloudpayments.")
+            || reflectedType.contains("Cloudpayments")
+    }
+
+    private static func isCompletedPaymentResultScreen(_ controller: UIViewController) -> Bool {
+        let reflectedType = String(reflecting: type(of: controller))
+        guard reflectedType.contains("PaymentResultViewController") else { return false }
+
+        for child in Mirror(reflecting: controller).children where child.label == "state" {
+            return String(describing: child.value).hasPrefix("completed")
+        }
+        return false
+    }
+
+    private static func rootViewController() -> UIViewController? {
         let scene = UIApplication.shared.connectedScenes
             .compactMap { $0 as? UIWindowScene }
             .first { $0.activationState == .foregroundActive }
@@ -430,11 +691,12 @@ public class CloudpaymentsSdkPlugin: NSObject, FlutterPlugin {
                 .compactMap { $0 as? UIWindowScene }
                 .first
 
-        guard let root = scene?.windows.first(where: { $0.isKeyWindow })?.rootViewController
+        return scene?.windows.first(where: { $0.isKeyWindow })?.rootViewController
             ?? scene?.windows.first?.rootViewController
-        else {
-            return nil
-        }
+    }
+
+    private static func topViewController() -> UIViewController? {
+        guard let root = rootViewController() else { return nil }
 
         // Walk all the way to the deepest presented controller. Stopping
         // early would return a controller that already has a
@@ -499,9 +761,90 @@ extension CloudpaymentsSdkPlugin: PaymentDelegate {
     }
 
     public func onPaymentClosed() {
-        // The SDK reports this when the form is dismissed, including after a
-        // finished payment — finishForm ignores everything after the first
-        // answer, so a close that follows a success stays harmless.
-        finishForm(["status": "closed"])
+        // The SDK also emits close while switching/reopening internal payment
+        // screens (choose another method, retry, SberPay errors). Do not finish
+        // immediately; the watchdog gives the SDK a short hand-off window and
+        // completes as closed only if no CloudPayments screen comes back.
+        formMissingPresentedTicks = max(formMissingPresentedTicks, 1)
+    }
+}
+
+/// Transparent shield window above Flutter but pass-through for CloudPayments content.
+/// If the SDK leaves background holes touch-transparent, this window catches them
+/// before UIKit can deliver touches to Flutter.
+private final class PaymentTouchBlockerWindow: UIWindow {
+    var protectedControllerProvider: (() -> UIViewController?)?
+    var onBackgroundTap: (() -> Void)?
+
+    private lazy var blockerView: UIView = {
+        let view = UIView(frame: bounds)
+        view.backgroundColor = .clear
+        view.autoresizingMask = [.flexibleWidth, .flexibleHeight]
+        view.isUserInteractionEnabled = true
+        view.accessibilityElementsHidden = true
+        view.addGestureRecognizer(UITapGestureRecognizer(
+            target: self,
+            action: #selector(backgroundTapped)
+        ))
+        return view
+    }()
+
+    override init(windowScene: UIWindowScene) {
+        super.init(windowScene: windowScene)
+        rootViewController = UIViewController()
+        rootViewController?.view.backgroundColor = .clear
+        rootViewController?.view.addSubview(blockerView)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) is not supported")
+    }
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard let controller = protectedControllerProvider?(),
+              let controllerView = controller.view,
+              !controllerView.isHidden,
+              controllerView.alpha > 0
+        else {
+            return blockerView.hitTest(convert(point, to: blockerView), with: event)
+        }
+
+        let pointInController = convert(point, to: controllerView)
+        if isInsidePaymentContent(controllerView, point: pointInController) {
+            return nil
+        }
+        return blockerView.hitTest(convert(point, to: blockerView), with: event)
+    }
+
+    private func isInsidePaymentContent(_ root: UIView, point: CGPoint) -> Bool {
+        var stack = root.subviews
+        while let view = stack.popLast() {
+            guard !view.isHidden, view.alpha > 0.01 else { continue }
+            defer { stack.append(contentsOf: view.subviews) }
+
+            let pointInView = root.convert(point, to: view)
+            guard view.bounds.contains(pointInView) else { continue }
+
+            // CloudPayments bottom-sheet/result containers are opaque visible
+            // content. Full-screen dim/background views must be caught.
+            let frameInRoot = view.convert(view.bounds, to: root)
+            let rootArea = max(root.bounds.width * root.bounds.height, 1)
+            let viewArea = frameInRoot.width * frameInRoot.height
+            let isAlmostFullscreen = viewArea >= rootArea * 0.92
+                && frameInRoot.width >= root.bounds.width * 0.92
+                && frameInRoot.height >= root.bounds.height * 0.92
+
+            let backgroundAlpha = view.backgroundColor?.cgColor.alpha ?? 0
+            let largeEnough = view.bounds.width > 80 && view.bounds.height > 80
+            if backgroundAlpha > 0.01 && largeEnough && !isAlmostFullscreen {
+                return true
+            }
+        }
+        return false
+    }
+
+    @objc private func backgroundTapped() {
+        onBackgroundTap?()
     }
 }

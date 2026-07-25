@@ -33,6 +33,12 @@ abstract class CloudpaymentsSdkPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  /// Best-effort cleanup for native screens left alive by Flutter hot restart.
+  Future<void> cleanupNativeScreens() {
+    throw UnimplementedError(
+        'cleanupNativeScreens() has not been implemented.');
+  }
+
   /// Encrypts card data into the `CardCryptogramPacket` the Payment API takes.
   ///
   /// [cardNumber] may contain spaces. [expiryDate] must be `MM/yy`. [cvv] is
