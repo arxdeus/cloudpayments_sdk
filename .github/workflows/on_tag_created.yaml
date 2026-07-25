@@ -18,11 +18,11 @@ jobs:
         fetch-tags: true
         fetch-depth: 0
 
-    - name: "Setup Dart"
-      uses: dart-lang/setup-dart@v1
+    - name: "Setup Flutter"
+      uses: arxdeus/github_workflows/actions/flutter_setup@main
       with:
-        sdk: stable
+        flutter-version: 3.44.7
 
     - name: "Run Publish"
       shell: bash
-      run: dart pub publish --force
+      run: flutter pub publish --force
