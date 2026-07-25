@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// Currencies CloudPayments accepts, as ISO 4217 alphabetic codes.
 ///
 /// This list is the union of the currencies the official iOS SDK declares and
@@ -75,6 +77,7 @@ enum Currency {
 
   /// Parses an ISO 4217 code, case-insensitively. Returns `null` for codes
   /// this enum does not cover.
+  @useResult
   static Currency? fromCode(String? code) {
     if (code == null) return null;
     final upper = code.toUpperCase();

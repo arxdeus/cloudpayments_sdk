@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// Base class for the failures this package throws.
 ///
 /// Only *errors* are exceptions here. A declined card, a failed 3-D Secure
@@ -17,6 +19,7 @@
 ///   };
 /// }
 /// ```
+@immutable
 sealed class CloudpaymentsException implements Exception {
   /// Creates an exception carrying a human-readable [message].
   const CloudpaymentsException(this.message);

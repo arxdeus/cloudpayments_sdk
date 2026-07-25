@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// The answer from `payments/ThreeDSCallback`, the endpoint that finishes a
 /// 3-D Secure payment for clients that only have a Public ID.
 ///
@@ -6,6 +8,7 @@
 /// carries `ReasonCode` and `CardHolderMessage`. It does not return the
 /// transaction — that needs the API secret. To reconcile the payment, look it
 /// up from your backend or wait for the CloudPayments `pay` webhook.
+@immutable
 class ThreeDsCallbackResult {
   /// Creates a callback result.
   const ThreeDsCallbackResult({

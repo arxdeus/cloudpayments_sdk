@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// Payment systems recognised by CloudPayments.
 ///
 /// Detection is based on the card's IIN/BIN (the leading digits of the card
@@ -49,6 +51,7 @@ enum CardSystem {
 
   /// Parses a [CardSystem] from the value CloudPayments returns in
   /// `Model.CardType`. Unrecognised values map to [CardSystem.unknown].
+  @useResult
   static CardSystem fromWireName(String? name) {
     if (name == null || name.isEmpty) return CardSystem.unknown;
     final normalized = name.replaceAll(' ', '').toLowerCase();
@@ -63,6 +66,7 @@ enum CardSystem {
   /// [digits] must already be stripped of spaces and separators. Partial
   /// numbers are supported, which is what makes this usable for live feedback
   /// while the user is still typing.
+  @useResult
   static CardSystem detect(String digits) {
     if (digits.isEmpty) return CardSystem.unknown;
     for (final rule in _binRules) {

@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'receipt.dart';
 
 /// How often a subscription charges.
@@ -44,6 +46,7 @@ enum RecurrentInterval {
 ///
 /// What you cannot do from the app: charge off-schedule, or change and cancel
 /// the subscription. Those need the API secret and belong on your backend.
+@immutable
 class CloudpaymentsRecurrent {
   /// Creates subscription instructions.
   const CloudpaymentsRecurrent({
@@ -85,6 +88,7 @@ class CloudpaymentsRecurrent {
   ///
   /// The receipt key is `receipt`, not `customerReceipt` — CloudPayments
   /// renamed it, and both 2.x SDKs send the new name.
+  @useResult
   Map<String, dynamic> toJson() => <String, dynamic>{
         'interval': interval.wireName,
         'period': period,

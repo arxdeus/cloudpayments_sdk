@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// The taxation system reported on a fiscal receipt (54-ФЗ).
 enum TaxationSystem {
   /// Общая (ОСН).
@@ -63,11 +65,12 @@ enum VatRate {
 }
 
 /// A single line on a fiscal receipt.
+@immutable
 class ReceiptItem {
   /// Creates a receipt line.
   ///
   /// [amount] defaults to `price * quantity` when omitted.
-  ReceiptItem({
+  const ReceiptItem({
     required this.label,
     required this.price,
     this.quantity = 1,
@@ -80,7 +83,7 @@ class ReceiptItem {
     this.productCode,
     this.countryCode,
     this.customsDeclarationNumber,
-  }) : amount = amount ?? price * quantity;
+  }) : _amount = amount;
 
   /// Product or service name printed on the receipt.
   final String label;
@@ -91,8 +94,10 @@ class ReceiptItem {
   /// Quantity sold.
   final double quantity;
 
+  final double? _amount;
+
   /// Line total. Defaults to `price * quantity`.
-  final double amount;
+  double get amount => _amount ?? price * quantity;
 
   /// VAT rate for this line.
   final VatRate vat;
@@ -119,6 +124,7 @@ class ReceiptItem {
   final String? customsDeclarationNumber;
 
   /// Serialises the line to its API shape.
+  @useResult
   Map<String, dynamic> toJson() => <String, dynamic>{
         'label': label,
         'price': price,
@@ -137,6 +143,7 @@ class ReceiptItem {
 }
 
 /// How the receipt total is split across payment methods.
+@immutable
 class ReceiptAmounts {
   /// Creates a payment split. Fields left at zero are omitted.
   const ReceiptAmounts({
@@ -159,6 +166,7 @@ class ReceiptAmounts {
   final double provision;
 
   /// Serialises the split to its API shape.
+  @useResult
   Map<String, dynamic> toJson() => <String, dynamic>{
         'electronic': electronic,
         'advancePayment': advancePayment,
@@ -172,6 +180,7 @@ class ReceiptAmounts {
 /// CloudPayments carries it in the request's `JsonData` under
 /// `CloudPayments.CustomerReceipt`; [Receipt.toJsonData] builds that wrapper
 /// for you.
+@immutable
 class Receipt {
   /// Creates a receipt.
   const Receipt({
@@ -217,6 +226,7 @@ class Receipt {
   double get total => items.fold(0, (sum, item) => sum + item.amount);
 
   /// Serialises the receipt to its `CustomerReceipt` shape.
+  @useResult
   Map<String, dynamic> toJson() => <String, dynamic>{
         'Items': items.map((item) => item.toJson()).toList(),
         if (taxationSystem != null) 'taxationSystem': taxationSystem!.code,
@@ -231,6 +241,7 @@ class Receipt {
 
   /// Wraps the receipt in the `JsonData` envelope CloudPayments expects,
   /// merging it into [existing] if given.
+  @useResult
   Map<String, dynamic> toJsonData([Map<String, dynamic>? existing]) {
     final data = <String, dynamic>{...?existing};
     final cloudPayments = <String, dynamic>{

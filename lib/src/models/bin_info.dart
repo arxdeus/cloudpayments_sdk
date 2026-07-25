@@ -1,9 +1,12 @@
+import 'package:meta/meta.dart';
+
 /// What CloudPayments knows about a card's issuing bank, looked up from the
 /// first six digits of the card number.
 ///
 /// Handy for showing the bank's name and logo in a card form while the user is
 /// still typing. Nothing here is card data — a BIN identifies a bank and a
 /// product, not a cardholder.
+@immutable
 class BinInfo {
   /// Creates bank information.
   const BinInfo({required this.raw});

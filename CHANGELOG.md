@@ -2,6 +2,11 @@
 
 ## 0.3.0
 
+- Models, results, options and exceptions are annotated `@immutable`, and pure
+  serialisers, parsers and validators are annotated `@useResult`, so the
+  analyzer catches a mutable subclass or a discarded `toJson()` at compile time.
+  `ReceiptItem` gained a `const` constructor as part of this; its `amount` is now
+  computed on read rather than at construction, with the same value as before.
 - **Android now requires AGP 8.13.0 or newer.** API 37 is published only as
   `platforms;android-37.0`, so older plugins cannot resolve the `compileSdk` 37
   the CloudPayments AAR demands and fail with

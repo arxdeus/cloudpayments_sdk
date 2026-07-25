@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// The payment methods the ready-made form can offer.
 ///
 /// Which ones actually appear depends on what is enabled for your terminal in
@@ -56,6 +58,7 @@ enum EmailFieldBehavior {
 /// A few settings only exist on one platform. They are all in one class rather
 /// than split in two because that is how you will use them — the ignored ones
 /// simply do nothing on the other platform, and each says so below.
+@immutable
 class PaymentFormOptions {
   /// Creates form options.
   const PaymentFormOptions({
@@ -115,6 +118,7 @@ class PaymentFormOptions {
   final String? failRedirectUrl;
 
   /// Serialises the options for the platform channel.
+  @useResult
   Map<String, dynamic> toArguments() => <String, dynamic>{
         'twoStage': twoStage,
         'emailBehavior': emailBehavior.wireName,

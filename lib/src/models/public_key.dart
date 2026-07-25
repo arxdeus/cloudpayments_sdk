@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// The RSA public key CloudPayments issues for encrypting card data, together
 /// with the version the gateway needs in order to pick the matching private
 /// key.
@@ -5,6 +7,7 @@
 /// Fetch it with [CloudpaymentsApiClient.getPublicKey]. It rotates rarely, so
 /// caching it for the lifetime of the app is fine — [CloudpaymentsSdk] does
 /// exactly that.
+@immutable
 class CloudpaymentsPublicKey {
   /// Creates a key.
   const CloudpaymentsPublicKey({required this.pem, required this.version});

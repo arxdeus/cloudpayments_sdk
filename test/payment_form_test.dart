@@ -69,7 +69,7 @@ void main() {
       final platform = _FakeFormPlatform();
 
       await _sdk(platform).presentPaymentForm(
-        details: PaymentDetails(
+        details: const PaymentDetails(
           amount: 150,
           receipt: Receipt(
             items: [ReceiptItem(label: 'Coffee', price: 150)],
@@ -161,7 +161,7 @@ void main() {
 
       await _sdk(platform).presentPaymentForm(
         details: const PaymentDetails(amount: 499, accountId: 'user-42'),
-        recurrent: CloudpaymentsRecurrent(
+        recurrent: const CloudpaymentsRecurrent(
           interval: RecurrentInterval.month,
           period: 1,
           receipt: Receipt(items: [ReceiptItem(label: 'Про', price: 499)]),
@@ -214,11 +214,11 @@ void main() {
     });
 
     test('a receipt and a subscription share the CloudPayments wrapper', () {
-      final request = PaymentDetails(
+      final request = const PaymentDetails(
         amount: 499,
         accountId: 'user-42',
         receipt: Receipt(items: [ReceiptItem(label: 'Про', price: 499)]),
-        recurrent: const CloudpaymentsRecurrent(
+        recurrent: CloudpaymentsRecurrent(
           interval: RecurrentInterval.month,
           period: 1,
         ),

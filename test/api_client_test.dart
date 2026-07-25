@@ -126,9 +126,9 @@ void main() {
       );
 
       await client.charge(
-        PaymentDetails(
+        const PaymentDetails(
           amount: 100,
-          jsonData: const {'orderSource': 'app'},
+          jsonData: {'orderSource': 'app'},
           receipt: Receipt(
             items: [ReceiptItem(label: 'Coffee', price: 100)],
             taxationSystem: TaxationSystem.simplifiedIncome,

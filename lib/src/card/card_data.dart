@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'card_system.dart';
 import 'card_utils.dart';
 
@@ -9,6 +11,7 @@ import 'card_utils.dart';
 /// deliberately does not implement `==`, `hashCode` or a revealing
 /// `toString()`, so it cannot leak into logs, crash reports or a widget tree
 /// diff by accident.
+@immutable
 class CardData {
   /// Creates card details.
   ///
@@ -43,6 +46,7 @@ class CardData {
   /// Whether the number, expiry date and security code are all well formed.
   ///
   /// [now] exists for tests; it defaults to the current local time.
+  @useResult
   bool isValid({DateTime? now}) =>
       CardUtils.isValidNumber(number) &&
       CardUtils.isValidExpiryDate(expiryDate, now: now) &&

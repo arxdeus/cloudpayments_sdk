@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'transaction.dart';
 
 /// The outcome of a payment.
@@ -17,6 +19,7 @@ import 'transaction.dart';
 ///   PaymentRequiresThreeDs() => 'Authentication required',
 /// };
 /// ```
+@immutable
 sealed class PaymentResult {
   const PaymentResult();
 

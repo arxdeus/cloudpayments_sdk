@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import 'card_system.dart';
 
 /// Pure-Dart validation, detection and formatting helpers for card data.
@@ -14,11 +16,13 @@ import 'card_system.dart';
 /// {@endtemplate}
 abstract final class CardUtils {
   /// Strips every character that is not a decimal digit.
+  @useResult
   static String digitsOnly(String input) =>
       input.replaceAll(RegExp(r'[^0-9]'), '');
 
   /// Detects the payment system of [number]. Tolerates partial input and any
   /// separators.
+  @useResult
   static CardSystem detectSystem(String number) =>
       CardSystem.detect(digitsOnly(number));
 
@@ -36,6 +40,7 @@ abstract final class CardUtils {
   /// Card number lengths accepted for [system], shortest first.
   ///
   /// Never below [minNumberLength] — see its documentation.
+  @useResult
   static List<int> allowedLengths(CardSystem system) => switch (system) {
         CardSystem.visa => const [16, 18, 19],
         CardSystem.masterCard => const [16],
@@ -53,12 +58,14 @@ abstract final class CardUtils {
 
   /// The length of the security code for [system]: 4 for American Express,
   /// 3 for everything else.
+  @useResult
   static int cvvLength(CardSystem system) =>
       system == CardSystem.americanExpress ? 4 : 3;
 
   /// Whether [digits] satisfies the Luhn checksum.
   ///
   /// Returns `false` for an empty string or for any non-digit input.
+  @useResult
   static bool passesLuhn(String digits) {
     if (digits.isEmpty) return false;
     var sum = 0;
@@ -82,6 +89,7 @@ abstract final class CardUtils {
   ///
   /// UzCard and Humo numbers are exempt from the Luhn check — those national
   /// systems do not use a Luhn check digit.
+  @useResult
   static bool isValidNumber(String number) {
     final digits = digitsOnly(number);
     if (digits.length < minNumberLength || digits.length > maxNumberLength) {
@@ -96,6 +104,7 @@ abstract final class CardUtils {
   /// Validates a security code against the detected system of [cardNumber].
   ///
   /// When [cardNumber] is omitted, any 3- or 4-digit code is accepted.
+  @useResult
   static bool isValidCvv(String cvv, {String? cardNumber}) {
     final digits = digitsOnly(cvv);
     if (digits.length != cvv.length) return false;
@@ -108,6 +117,7 @@ abstract final class CardUtils {
   /// Parses an expiry date into its `(month, year)` parts, where `year` is the
   /// full four-digit year. Returns `null` when [expiry] is not a well-formed
   /// `MM/YY`, `MMYY`, `MM/YYYY` or `MMYYYY` value with a month in 1..12.
+  @useResult
   static (int month, int year)? parseExpiry(String expiry) {
     final digits = digitsOnly(expiry);
     if (digits.length != 4 && digits.length != 6) return null;
@@ -124,6 +134,7 @@ abstract final class CardUtils {
   ///
   /// A card is valid through the final day of its expiry month. [now] exists
   /// for tests; it defaults to the current local time.
+  @useResult
   static bool isValidExpiryDate(String expiry, {DateTime? now}) {
     final parsed = parseExpiry(expiry);
     if (parsed == null) return false;
@@ -138,6 +149,7 @@ abstract final class CardUtils {
   /// expect when building a cryptogram.
   ///
   /// Throws [FormatException] if [expiry] cannot be parsed.
+  @useResult
   static String normalizeExpiry(String expiry) {
     final parsed = parseExpiry(expiry);
     if (parsed == null) {
@@ -150,6 +162,7 @@ abstract final class CardUtils {
   }
 
   /// Digit-group sizes used when rendering a number of the given [system].
+  @useResult
   static List<int> groupSizes(CardSystem system) => switch (system) {
         CardSystem.americanExpress => const [4, 6, 5],
         CardSystem.dinersClub => const [4, 6, 4],
@@ -159,6 +172,7 @@ abstract final class CardUtils {
   /// Formats a card number for display, e.g. `4111 1111 1111 1111`.
   ///
   /// Works on partial input, so it can be applied on every keystroke.
+  @useResult
   static String formatNumber(String number) {
     final digits = digitsOnly(number);
     if (digits.isEmpty) return '';
@@ -178,6 +192,7 @@ abstract final class CardUtils {
   }
 
   /// Formats a partially typed expiry date as `MM/yy`.
+  @useResult
   static String formatExpiry(String input) {
     final digits = digitsOnly(input);
     if (digits.isEmpty) return '';
@@ -191,6 +206,7 @@ abstract final class CardUtils {
   /// `411111******1111`.
   ///
   /// Numbers too short to mask meaningfully are returned fully masked.
+  @useResult
   static String maskNumber(String number) {
     final digits = digitsOnly(number);
     if (digits.length < 12) return '*' * digits.length;

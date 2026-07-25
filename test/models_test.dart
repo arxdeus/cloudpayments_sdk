@@ -244,7 +244,7 @@ void main() {
 
   group('Receipt', () {
     test('computes the line total and the electronic amount', () {
-      final receipt = Receipt(
+      const receipt = Receipt(
         items: [
           ReceiptItem(label: 'Coffee', price: 150, quantity: 2),
           ReceiptItem(label: 'Cake', price: 300, vat: VatRate.vat20),
@@ -259,7 +259,7 @@ void main() {
     });
 
     test('an explicit line amount wins over price * quantity', () {
-      final item = ReceiptItem(
+      const item = ReceiptItem(
         label: 'Discounted',
         price: 100,
         quantity: 3,
@@ -269,13 +269,13 @@ void main() {
     });
 
     test('vat: none serialises as null, which is "не облагается"', () {
-      final json = ReceiptItem(label: 'X', price: 1).toJson();
+      final json = const ReceiptItem(label: 'X', price: 1).toJson();
       expect(json.containsKey('vat'), isTrue);
       expect(json['vat'], isNull);
     });
 
     test('merges into existing JsonData rather than replacing it', () {
-      final data = Receipt(items: [ReceiptItem(label: 'X', price: 1)])
+      final data = const Receipt(items: [ReceiptItem(label: 'X', price: 1)])
           .toJsonData({'orderSource': 'app'});
 
       expect(data['orderSource'], 'app');

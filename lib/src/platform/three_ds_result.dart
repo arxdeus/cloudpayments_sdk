@@ -1,9 +1,12 @@
+import 'package:meta/meta.dart';
+
 /// The outcome of the native 3-D Secure screen.
 ///
 /// The screen is a WebView hosted by the platform — an `Activity` on Android,
 /// a presented `UIViewController` on iOS — that loads the issuer's Access
 /// Control Server page and captures the result it posts back. Exactly one of
 /// the three subclasses comes back, so `switch` over them is exhaustive.
+@immutable
 sealed class ThreeDsResult {
   const ThreeDsResult();
 }

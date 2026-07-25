@@ -1,8 +1,11 @@
+import 'package:meta/meta.dart';
+
 /// Payer details sent in the `Payer` object of a payment request.
 ///
 /// Every field is optional, but acquirers apply lower fraud scores when more
 /// of them are filled in, and some 3-D Secure 2 flows use them for frictionless
 /// authentication.
+@immutable
 class Payer {
   /// Creates payer details. All fields are optional.
   const Payer({
@@ -63,6 +66,7 @@ class Payer {
   final String? postcode;
 
   /// Serialises to the `Payer` object shape, omitting unset fields.
+  @useResult
   Map<String, dynamic> toJson() => <String, dynamic>{
         if (firstName != null) 'FirstName': firstName,
         if (lastName != null) 'LastName': lastName,

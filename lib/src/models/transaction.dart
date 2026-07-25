@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 import '../card/card_system.dart';
 
 /// The lifecycle state of a transaction, as reported in `Model.Status`.
@@ -28,6 +30,7 @@ enum TransactionStatus {
   final String wireName;
 
   /// Parses `Model.Status`, case-insensitively.
+  @useResult
   static TransactionStatus fromWireName(String? name) {
     if (name == null || name.isEmpty) return TransactionStatus.unknown;
     for (final status in TransactionStatus.values) {
@@ -42,6 +45,7 @@ enum TransactionStatus {
 /// CloudPayments signals "authentication required" with `Success: false`,
 /// `Message: null` and an `AcsUrl`/`PaReq` pair in the `Model` — it is not an
 /// error. Hand this object to the native 3-D Secure screen.
+@immutable
 class ThreeDsChallenge {
   /// Creates a challenge descriptor.
   const ThreeDsChallenge({
@@ -93,6 +97,7 @@ class ThreeDsChallenge {
 ///
 /// Only the fields the API documents are surfaced as typed getters; anything
 /// else CloudPayments returns is still available through [raw].
+@immutable
 class Transaction {
   /// Creates a transaction. You will normally get one from the API rather
   /// than build it yourself.

@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:meta/meta.dart';
+
 import 'currency.dart';
 import 'payer.dart';
 import 'receipt.dart';
@@ -13,6 +15,7 @@ import 'recurrent.dart';
 ///
 /// Field names on the wire are PascalCase (`Amount`, `InvoiceId`) exactly as
 /// CloudPayments expects; the Dart names are idiomatic.
+@immutable
 class PaymentDetails {
   /// Creates payment details.
   const PaymentDetails({
@@ -117,6 +120,7 @@ class PaymentDetails {
   }
 
   /// Pairs these details with a card cryptogram.
+  @useResult
   CardPaymentRequest asCardPayment({
     required String cryptogram,
     String cardHolderName = CardPaymentRequest.defaultCardHolderName,
@@ -143,6 +147,7 @@ class PaymentDetails {
   /// Pairs these details with a saved-card token.
   ///
   /// [accountId] must be set — CloudPayments requires it for token payments.
+  @useResult
   TokenPaymentRequest asTokenPayment(String token) {
     final id = accountId;
     if (id == null || id.isEmpty) {
@@ -170,6 +175,7 @@ class PaymentDetails {
   }
 
   /// Serialises the fields shared by every payment request.
+  @useResult
   Map<String, dynamic> toJson() {
     final data = effectiveJsonData;
     return <String, dynamic>{
@@ -230,6 +236,7 @@ class CardPaymentRequest extends PaymentDetails {
   final String cardHolderName;
 
   @override
+  @useResult
   Map<String, dynamic> toJson() => <String, dynamic>{
         ...super.toJson(),
         'Name': cardHolderName,
@@ -266,6 +273,7 @@ class TokenPaymentRequest extends PaymentDetails {
   final String token;
 
   @override
+  @useResult
   Map<String, dynamic> toJson() => <String, dynamic>{
         ...super.toJson(),
         'Token': token,

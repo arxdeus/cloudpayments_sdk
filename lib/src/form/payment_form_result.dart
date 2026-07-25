@@ -1,3 +1,5 @@
+import 'package:meta/meta.dart';
+
 /// The outcome of the ready-made CloudPayments payment form.
 ///
 /// The form owns the whole flow — card entry, 3-D Secure, СБП, T‑Pay and the
@@ -19,6 +21,7 @@
 /// To get the full transaction, look it up from your backend or handle the
 /// CloudPayments `pay` webhook — the form does not return one, and fetching it
 /// needs the API secret.
+@immutable
 sealed class PaymentFormResult {
   const PaymentFormResult();
 
