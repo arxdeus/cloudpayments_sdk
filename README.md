@@ -2,6 +2,8 @@
 
 CloudPayments for Flutter, built on the **official CloudPayments native SDKs**.
 
+Example showcase video: [Github Video](https://github.com/arxdeus/cloudpayments_sdk/blob/main/example/assets/showcase.mp4).
+
 Two ways to take a payment. Pick the first unless you have a reason not to.
 
 ## 1. CloudPayments' own form
