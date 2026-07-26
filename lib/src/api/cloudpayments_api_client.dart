@@ -151,18 +151,20 @@ class CloudpaymentsApiClient {
   ///
   /// Requires the API secret — CloudPayments does not open token payments to
   /// Public ID clients. Call this from your backend.
-  Future<PaymentResult> chargeToken(TokenPaymentRequest request) {
-    _requireSecret('chargeToken');
-    return _payment('payments/tokens/charge', request.toJson());
-  }
+  Future<PaymentResult> chargeToken(TokenPaymentRequest request) =>
+      Future.sync(() {
+        _requireSecret('chargeToken');
+        return _payment('payments/tokens/charge', request.toJson());
+      });
 
   /// Authorises a saved card by token, without capturing.
   ///
   /// Requires the API secret. Call this from your backend.
-  Future<PaymentResult> authToken(TokenPaymentRequest request) {
-    _requireSecret('authToken');
-    return _payment('payments/tokens/auth', request.toJson());
-  }
+  Future<PaymentResult> authToken(TokenPaymentRequest request) =>
+      Future.sync(() {
+        _requireSecret('authToken');
+        return _payment('payments/tokens/auth', request.toJson());
+      });
 
   Future<PaymentResult> _payment(String path, Map<String, dynamic> body) async {
     final json = await _send(

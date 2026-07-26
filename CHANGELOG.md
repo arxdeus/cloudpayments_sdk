@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.3.1](https://github.com/arxdeus/cloudpayments_sdk/compare/v0.3.0..0.3.1) - 2026-07-26
+
+### Bug Fixes
+
+- **(ci)** setup `OIDC` token step - ([637ec57](https://github.com/arxdeus/cloudpayments_sdk/commit/637ec573c2a66e6839b1276a0db5535ca90a13aa))
+
+### Features
+
+- enhance payment handling with lifecycle management and touch blockers - ([56f2f46](https://github.com/arxdeus/cloudpayments_sdk/commit/56f2f468d634f8f77a9ec869df484d687262d87d))
+
+### Miscellaneous Chores
+
+- **(readme)** video showcase link - ([26b44d9](https://github.com/arxdeus/cloudpayments_sdk/commit/26b44d92fe4af215d6a24d1583a398b02a504259))
+- **(readme)** gifs instead of video - ([a7ee16e](https://github.com/arxdeus/cloudpayments_sdk/commit/a7ee16e5796b3eda6054077249c5c488fa453628))
+- **(readme)** reduce size for assets - ([3578d08](https://github.com/arxdeus/cloudpayments_sdk/commit/3578d085dbc6ff9b5adf218c58df8e752c917930))
+- `example` in `.pubignore` - ([6226472](https://github.com/arxdeus/cloudpayments_sdk/commit/6226472e594ff2bc222015025e536fc8d16de7fc))
+
+### Refactoring
+
+- **(example)** migrate to SwiftPM - ([4f9639b](https://github.com/arxdeus/cloudpayments_sdk/commit/4f9639bd62adde32e671f64408ee1d1b28756e33))
+
 ## [0.3.0](https://github.com/arxdeus/cloudpayments_sdk/compare/v0.2.0..0.3.0) - 2026-07-25
 
 ### Bug Fixes
