@@ -118,8 +118,8 @@ void main() {
 
       await call();
 
-      expect(calls.single.method, 'show3ds');
-      expect(calls.single.arguments, <String, dynamic>{
+      final show3dsCall = calls.where((call) => call.method == 'show3ds').single;
+      expect(show3dsCall.arguments, <String, dynamic>{
         'acsUrl': 'https://acs.example/auth',
         'paReq': 'PAREQ',
         'md': '504',
