@@ -3,7 +3,9 @@
 One-screen checkout that runs the full CloudPayments cycle: card entry with
 live validation, cryptogram, charge, 3-D Secure, result.
 
-Short showcase video is [located at Github](https://github.com/arxdeus/cloudpayments_sdk/blob/main/example/assets/showcase.mp4).
+## Showcase
+![Native CloudPayments form](https://github.com/arxdeus/cloudpayments_sdk/blob/main/example/assets/native-form.gif)
+![Flutter card form](https://github.com/arxdeus/cloudpayments_sdk/blob/main/example/assets/flutter-card-form.gif)
 
 ## Running it
 
